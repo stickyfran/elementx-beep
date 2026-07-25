@@ -60,6 +60,7 @@ dependencies {
     implementation(projects.features.preferences.impl)
     implementation(projects.features.reportroom.api)
     implementation(projects.features.rolesandpermissions.api)
+    implementation(projects.features.beeperbridge.api)
     implementation(projects.libraries.previewutils)
     api(projects.features.home.api)
 

@@ -17,6 +17,8 @@ import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.model.InviteSender
+import io.element.android.features.beeperbridge.api.BeeperRoomData
+import io.element.android.features.beeperbridge.api.BeeperNetwork
 import kotlinx.collections.immutable.ImmutableList
 
 @Immutable
@@ -44,6 +46,7 @@ data class RoomListRoomSummary(
     val heroes: ImmutableList<AvatarData>,
     val isSpace: Boolean,
     val dmUserStatus: DisplayedStatus?,
+    val beeperData: BeeperRoomData? = null,
 ) {
     val isHighlighted = userDefinedNotificationMode != RoomNotificationMode.MUTE &&
         (numberOfUnreadNotifications > 0 || numberOfUnreadMentions > 0) ||

@@ -9,6 +9,7 @@
 package io.element.android.features.home.impl.datasource
 
 import dev.zacsweers.metro.Inject
+import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.home.impl.model.LatestEvent
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.model.RoomSummaryDisplayType
@@ -30,14 +31,24 @@ import kotlinx.collections.immutable.toImmutableList
 class RoomListRoomSummaryFactory(
     private val dateFormatter: DateFormatter,
     private val roomLatestEventFormatter: RoomLatestEventFormatter,
+    private val beeperBridgeService: BeeperBridgeService,
 ) {
     fun create(roomSummary: RoomSummary): RoomListRoomSummary {
         val roomInfo = roomSummary.info
-        val avatarData = roomInfo.getAvatarData(size = AvatarSize.RoomListItem)
+        val beeperData = beeperBridgeService.getRoomData(roomSummary.roomId.value)
+        val nameOverride = beeperData?.overrideDisplayName ?: roomInfo.name
+        
+        var avatarData = roomInfo.getAvatarData(size = AvatarSize.RoomListItem)
+        if (beeperData?.overrideAvatarUrl != null) {
+            avatarData = avatarData.copy(url = beeperData.overrideAvatarUrl, name = nameOverride)
+        } else if (nameOverride != roomInfo.name) {
+            avatarData = avatarData.copy(name = nameOverride)
+        }
+        
         return RoomListRoomSummary(
             id = roomSummary.roomId.value,
             roomId = roomSummary.roomId,
-            name = roomInfo.name,
+            name = nameOverride,
             numberOfUnreadMessages = roomInfo.numUnreadMessages,
             numberOfUnreadMentions = roomInfo.numUnreadMentions,
             numberOfUnreadNotifications = roomInfo.numUnreadNotifications,
@@ -56,7 +67,7 @@ class RoomListRoomSummaryFactory(
                 is CallIntentConsensus.Partial -> consensus.callIntent
                 CallIntentConsensus.None -> null
             },
-            isDirect = roomInfo.isDirect,
+            isDirect = roomInfo.isDirect || beeperData?.isFakeDm == true,
             isFavorite = roomInfo.isFavorite,
             inviteSender = roomInfo.inviter?.toInviteSender(),
             isDm = roomInfo.isDm,
@@ -78,6 +89,7 @@ class RoomListRoomSummaryFactory(
             isTombstoned = roomInfo.successorRoom != null,
             isSpace = roomInfo.isSpace,
             dmUserStatus = roomInfo.dmUserStatus(),
+            beeperData = beeperData,
         )
     }
 

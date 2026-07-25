@@ -1,6 +1,7 @@
 package io.element.android.features.beeperbridge.impl
 
 import io.element.android.features.beeperbridge.api.BeeperNetwork
+import dev.zacsweers.metro.Inject
 
 data class RoomMemberStub(
     val userId: String,
@@ -15,7 +16,7 @@ data class FakeDmResult(
     val isIncomplete: Boolean = false
 )
 
-class FakeDmDetector {
+class FakeDmDetector @Inject constructor() {
     fun analyze(
         roomName: String?,
         members: List<RoomMemberStub>,

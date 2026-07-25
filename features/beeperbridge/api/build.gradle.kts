@@ -1,5 +1,5 @@
 plugins {
-    id("io.element.android-library")
+    id("io.element.android-compose-library")
 }
 
 android {
@@ -7,6 +7,8 @@ android {
 }
 
 dependencies {
-    // Basic compose / android dependencies might be needed if BeeperNetwork uses DrawableRes
     implementation(libs.androidx.annotation)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material3)
 }
