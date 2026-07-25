@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Inject
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
-import io.element.android.features.beeperbridge.impl.spaces.VirtualSpacesProvider
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
 import io.element.android.libraries.architecture.Presenter
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList

@@ -6,10 +6,9 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.features.beeperbridge.api.settings.BeeperNetworksEntryPoint
 import io.element.android.libraries.architecture.createNode
-import javax.inject.Inject
 
 @ContributesBinding(AppScope::class)
-class DefaultBeeperNetworksEntryPoint @Inject constructor() : BeeperNetworksEntryPoint {
+class DefaultBeeperNetworksEntryPoint : BeeperNetworksEntryPoint {
     override fun createNode(
         parentNode: Node,
         buildContext: BuildContext,

@@ -1,14 +1,11 @@
 package io.element.android.features.beeperbridge.impl.settings
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.designsystem.theme.components.ListItemContent
+import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.compound.tokens.generated.CompoundIcons
 
@@ -23,19 +20,15 @@ fun BeeperNetworksView(
         onBackClick = onBackClick,
         title = "Beeper Networks",
     ) {
-        LazyColumn(
-            modifier = Modifier.weight(1f)
-        ) {
-            items(state.networks) { network ->
-                ListItem(
-                    headlineContent = { Text(network.displayName) },
-                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Chat())), // Placeholder icon
-                    trailingContent = ListItemContent.Text("Connect"), // We'll update this later based on actual status
-                    onClick = {
-                        // TODO: trigger login flow
-                    }
-                )
-            }
+        state.networks.forEach { network ->
+            ListItem(
+                headlineContent = { Text(network.displayName) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Chat())), // Placeholder icon
+                trailingContent = ListItemContent.Text("Connect"), // We'll update this later based on actual status
+                onClick = {
+                    // TODO: trigger login flow
+                }
+            )
         }
     }
 }

@@ -86,7 +86,8 @@ class RoomListPresenter(
     private val coldStartWatcher: AnalyticsColdStartWatcher,
     private val spaceFiltersPresenter: Presenter<SpaceFiltersState>,
     private val featureFlagService: FeatureFlagService,
-    private val virtualSpacesProvider: io.element.android.features.beeperbridge.impl.spaces.VirtualSpacesProvider,
+    private val virtualSpacesProvider: io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider,
+    private val beeperLabelsRepository: io.element.android.features.beeperbridge.api.BeeperLabelsRepository,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -232,7 +233,7 @@ class RoomListPresenter(
         
         val roomSummaries by produceState(initialValue = AsyncData.Loading(), key1 = selectedSpace) {
             roomListDataSource.roomSummariesFlow.collect { summaries ->
-                val filtered = virtualSpacesProvider.filterRoomsForSpace(summaries, selectedSpace)
+                 val filtered = filterRoomsForSpace(summaries, selectedSpace)
                 value = AsyncData.Success(filtered)
             }
         }
@@ -322,6 +323,41 @@ class RoomListPresenter(
                 .onSuccess {
                     analyticsService.captureInteraction(name = Interaction.Name.MobileRoomListRoomContextMenuUnreadToggle)
                 }
+        }
+    }
+
+    private suspend fun filterRoomsForSpace(
+        rooms: List<RoomListRoomSummary>,
+        spaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
+    ): List<RoomListRoomSummary> {
+        return when (spaceId) {
+            is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats -> {
+                val hiddenNetworks = beeperLabelsRepository.getHiddenNetworks()
+                rooms.filter { room ->
+                    val network = room.beeperData?.network
+                    network == null || !hiddenNetworks.contains(network.name)
+                }
+            }
+            is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.NetworkSpace -> {
+                rooms.filter { room ->
+                    room.beeperData?.network?.name == spaceId.networkKey
+                }
+            }
+            is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.LabelSpace -> {
+                val labels = beeperLabelsRepository.getLabels()
+                val label = labels.find { it.id == spaceId.labelId }
+                if (label != null) {
+                    rooms.filter { label.roomIds.contains(it.id) }
+                } else {
+                    emptyList()
+                }
+            }
+            is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.RealSpace -> {
+                rooms
+            }
+            is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.TagSpace -> {
+                rooms
+            }
         }
     }
 }
