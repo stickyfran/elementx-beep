@@ -67,6 +67,7 @@ dependencies {
     testCommonDependencies(libs, true)
     testImplementation(projects.features.announcement.test)
     testImplementation(projects.features.invite.test)
+    testImplementation(projects.features.beeperbridge.test)
     testImplementation(projects.features.logout.test)
     testImplementation(projects.features.networkmonitor.test)
     testImplementation(projects.libraries.matrix.test)

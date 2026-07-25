@@ -664,6 +664,8 @@ class RoomListPresenterTest {
         announcementService: AnnouncementService = FakeAnnouncementService(),
         featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
         markRoomAsRead: MarkRoomAsRead? = null,
+        virtualSpacesProvider: io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider = io.element.android.features.beeperbridge.test.FakeVirtualSpacesProvider(),
+        beeperLabelsRepository: io.element.android.features.beeperbridge.api.BeeperLabelsRepository = io.element.android.features.beeperbridge.test.FakeBeeperLabelsRepository(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -695,5 +697,7 @@ class RoomListPresenterTest {
         announcementService = announcementService,
         coldStartWatcher = FakeAnalyticsColdStartWatcher(),
         featureFlagService = featureFlagService,
+        virtualSpacesProvider = virtualSpacesProvider,
+        beeperLabelsRepository = beeperLabelsRepository,
     )
 }
