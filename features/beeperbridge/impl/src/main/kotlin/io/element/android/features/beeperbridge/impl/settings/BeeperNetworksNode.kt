@@ -1,0 +1,29 @@
+package io.element.android.features.beeperbridge.impl.settings
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.bumble.appyx.core.modality.BuildContext
+import com.bumble.appyx.core.node.Node
+import com.bumble.appyx.core.plugin.Plugin
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedInject
+import io.element.android.annotations.ContributesNode
+import io.element.android.libraries.di.SessionScope
+
+@ContributesNode(SessionScope::class)
+class BeeperNetworksNode @AssistedInject constructor(
+    @Assisted buildContext: BuildContext,
+    @Assisted plugins: List<Plugin>,
+    private val presenter: BeeperNetworksPresenter,
+) : Node(buildContext, plugins = plugins) {
+
+    @Composable
+    override fun View(modifier: Modifier) {
+        val state = presenter.present()
+        BeeperNetworksView(
+            state = state,
+            onBackClick = this::navigateUp,
+            modifier = modifier,
+        )
+    }
+}

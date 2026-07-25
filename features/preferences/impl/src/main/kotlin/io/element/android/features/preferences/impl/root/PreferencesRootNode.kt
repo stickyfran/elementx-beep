@@ -50,6 +50,7 @@ class PreferencesRootNode(
         fun navigateToLinkNewDevice()
         fun navigateToUserProfile(matrixUser: MatrixUser)
         fun navigateToBlockedUsers()
+        fun onOpenBeeperNetworks()
         fun startSignOutFlow()
         fun startAccountDeactivationFlow()
     }
@@ -94,6 +95,7 @@ class PreferencesRootNode(
             onOpenLockScreenSettings = callback::navigateToLockScreenSettings,
             onOpenUserProfile = callback::navigateToUserProfile,
             onOpenBlockedUsers = callback::navigateToBlockedUsers,
+            onOpenBeeperNetworks = callback::onOpenBeeperNetworks,
             onSignOutClick = {
                 if (state.directLogoutState.canDoDirectSignOut) {
                     state.directLogoutState.eventSink(DirectLogoutEvents.Logout(ignoreSdkError = false))

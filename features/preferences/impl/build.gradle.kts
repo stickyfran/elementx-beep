@@ -81,6 +81,7 @@ dependencies {
     implementation(projects.features.deactivation.api)
     implementation(projects.features.home.api)
     implementation(projects.features.invite.api)
+    implementation(projects.features.beeperbridge.api)
     implementation(projects.libraries.emoji.api)
     implementation(projects.services.analytics.api)
     implementation(projects.services.analytics.compose)

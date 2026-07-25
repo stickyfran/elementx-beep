@@ -59,6 +59,7 @@ class PreferencesFlowNode(
     private val logoutEntryPoint: LogoutEntryPoint,
     private val openSourceLicensesEntryPoint: OpenSourceLicensesEntryPoint,
     private val accountDeactivationEntryPoint: AccountDeactivationEntryPoint,
+    private val beeperNetworksEntryPoint: io.element.android.features.beeperbridge.api.settings.BeeperNetworksEntryPoint,
 ) : BaseFlowNode<PreferencesFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = plugins.filterIsInstance<PreferencesEntryPoint.Params>().first().initialElement.toNavTarget(),
@@ -115,6 +116,9 @@ class PreferencesFlowNode(
 
         @Parcelize
         data object OssLicenses : NavTarget
+
+        @Parcelize
+        data object BeeperNetworks : NavTarget
     }
 
     private val callback: PreferencesEntryPoint.Callback = callback()
@@ -173,6 +177,10 @@ class PreferencesFlowNode(
 
                     override fun navigateToBlockedUsers() {
                         backstack.push(NavTarget.BlockedUsers)
+                    }
+
+                    override fun onOpenBeeperNetworks() {
+                        backstack.push(NavTarget.BeeperNetworks)
                     }
 
                     override fun startSignOutFlow() {
@@ -323,6 +331,9 @@ class PreferencesFlowNode(
             }
             NavTarget.AccountDeactivation -> {
                 accountDeactivationEntryPoint.createNode(this, buildContext)
+            }
+            NavTarget.BeeperNetworks -> {
+                beeperNetworksEntryPoint.createNode(this, buildContext)
             }
         }
     }

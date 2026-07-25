@@ -67,6 +67,7 @@ fun PreferencesRootView(
     onOpenNotificationSettings: () -> Unit,
     onOpenUserProfile: (MatrixUser) -> Unit,
     onOpenBlockedUsers: () -> Unit,
+    onOpenBeeperNetworks: () -> Unit,
     onSignOutClick: () -> Unit,
     onDeactivateClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -99,6 +100,11 @@ fun PreferencesRootView(
                 showTopDivider = !state.isMultiAccountEnabled,
             )
         }
+        
+        BeeperSection(
+            onOpenBeeperNetworks = onOpenBeeperNetworks
+        )
+
         // 'Account' section
         ManageAccountSection(
             state = state,
@@ -194,6 +200,18 @@ private fun ColumnScope.MultiAccountSection(
         thickness = 8.dp,
         color = ElementTheme.colors.bgSubtleSecondary,
     )
+}
+
+@Composable
+private fun ColumnScope.BeeperSection(
+    onOpenBeeperNetworks: () -> Unit,
+) {
+    ListItem(
+        headlineContent = { Text("Beeper Networks") },
+        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Chat())),
+        onClick = onOpenBeeperNetworks,
+    )
+    HorizontalDivider()
 }
 
 @Composable
@@ -394,6 +412,7 @@ private fun ContentToPreview(state: PreferencesRootState) {
         onOpenLockScreenSettings = {},
         onOpenUserProfile = {},
         onOpenBlockedUsers = {},
+        onOpenBeeperNetworks = {},
         onSignOutClick = {},
         onDeactivateClick = {},
     )
