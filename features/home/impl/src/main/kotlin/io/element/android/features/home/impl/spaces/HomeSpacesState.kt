@@ -8,21 +8,12 @@
 
 package io.element.android.features.home.impl.spaces
 
-import io.element.android.libraries.matrix.api.core.RoomId
-import io.element.android.libraries.matrix.api.spaces.SpaceRoom
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceItem
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableSet
 
 data class HomeSpacesState(
-    val space: CurrentSpace,
-    val spaceRooms: ImmutableList<SpaceRoom>,
-    val seenSpaceInvites: ImmutableSet<RoomId>,
-    val hideInvitesAvatar: Boolean,
-    val canExploreSpaces: Boolean,
+    val spaces: ImmutableList<VirtualSpaceItem>,
+    val selectedSpaceId: VirtualSpaceId,
     val eventSink: (HomeSpacesEvents) -> Unit,
 )
-
-sealed interface CurrentSpace {
-    object Root : CurrentSpace
-    data class Space(val spaceRoom: SpaceRoom) : CurrentSpace
-}

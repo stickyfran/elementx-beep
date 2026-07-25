@@ -55,6 +55,7 @@ import io.element.android.features.home.impl.search.RoomListSearchView
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersEvent
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersView
+import io.element.android.features.home.impl.spaces.HomeSpacesEvents
 import io.element.android.features.home.impl.spaces.HomeSpacesView
 import io.element.android.libraries.androidutils.throttler.FirstThrottler
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -278,7 +279,8 @@ private fun HomeScaffold(
                         state = state.homeSpacesState,
                         lazyListState = spacesLazyListState,
                         onSpaceClick = { spaceId ->
-                            onRoomClick(spaceId)
+                            state.homeSpacesState.eventSink(HomeSpacesEvents.SelectSpace(spaceId))
+                            state.eventSink(HomeEvent.SelectHomeNavigationBarItem(HomeNavigationBarItem.Chats))
                         },
                         onCreateSpaceClick = onCreateSpaceClick,
                         // TODO use actual callbacks for this

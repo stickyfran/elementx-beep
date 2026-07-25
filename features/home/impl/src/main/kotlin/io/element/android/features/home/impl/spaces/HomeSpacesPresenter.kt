@@ -11,45 +11,39 @@ package io.element.android.features.home.impl.spaces
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Inject
-import io.element.android.features.invite.api.SeenInvitesStore
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
+import io.element.android.features.beeperbridge.impl.spaces.VirtualSpacesProvider
 import io.element.android.libraries.architecture.Presenter
-import io.element.android.libraries.matrix.api.MatrixClient
-import io.element.android.libraries.matrix.ui.safety.rememberHideInvitesAvatar
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableSet
-import kotlinx.coroutines.flow.map
 
 @Inject
 class HomeSpacesPresenter(
-    private val client: MatrixClient,
-    private val seenInvitesStore: SeenInvitesStore,
+    private val virtualSpacesProvider: VirtualSpacesProvider,
 ) : Presenter<HomeSpacesState> {
     @Composable
     override fun present(): HomeSpacesState {
-        val hideInvitesAvatar by client.rememberHideInvitesAvatar()
-        val spaceRooms by remember {
-            client.spaceService.topLevelSpacesFlow.map { it.toImmutableList() }
+        val spaces by remember {
+            virtualSpacesProvider.getAvailableSpaces()
         }.collectAsState(persistentListOf())
-
-        val seenSpaceInvites by remember {
-            seenInvitesStore.seenRoomIds().map { it.toImmutableSet() }
-        }.collectAsState(persistentSetOf())
+        
+        val selectedSpaceId by virtualSpacesProvider.getSelectedSpace().collectAsState()
 
         fun handleEvent(event: HomeSpacesEvents) {
-            // when (event) { }
+            when (event) {
+                is HomeSpacesEvents.SelectSpace -> {
+                    virtualSpacesProvider.selectSpace(event.spaceId)
+                }
+            }
         }
 
         return HomeSpacesState(
-            space = CurrentSpace.Root,
-            spaceRooms = spaceRooms,
-            seenSpaceInvites = seenSpaceInvites,
-            hideInvitesAvatar = hideInvitesAvatar,
-            // TODO enable once we can link to the screen to explore public spaces
-            canExploreSpaces = false,
+            spaces = spaces.toImmutableList(),
+            selectedSpaceId = selectedSpaceId,
             eventSink = ::handleEvent,
         )
     }

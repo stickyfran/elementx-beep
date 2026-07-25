@@ -8,4 +8,8 @@
 
 package io.element.android.features.home.impl.spaces
 
-sealed interface HomeSpacesEvents
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
+
+sealed interface HomeSpacesEvents {
+    data class SelectSpace(val spaceId: VirtualSpaceId) : HomeSpacesEvents
+}

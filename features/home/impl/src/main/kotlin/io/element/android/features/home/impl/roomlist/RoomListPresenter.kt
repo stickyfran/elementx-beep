@@ -86,6 +86,7 @@ class RoomListPresenter(
     private val coldStartWatcher: AnalyticsColdStartWatcher,
     private val spaceFiltersPresenter: Presenter<SpaceFiltersState>,
     private val featureFlagService: FeatureFlagService,
+    private val virtualSpacesProvider: io.element.android.features.beeperbridge.impl.spaces.VirtualSpacesProvider,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -227,8 +228,13 @@ class RoomListPresenter(
         showNewNotificationSoundBanner: Boolean,
         showUnreadCount: Boolean,
     ): RoomListContentState {
-        val roomSummaries by produceState(initialValue = AsyncData.Loading()) {
-            roomListDataSource.roomSummariesFlow.collect { value = AsyncData.Success(it) }
+        val selectedSpace by virtualSpacesProvider.getSelectedSpace().collectAsState()
+        
+        val roomSummaries by produceState(initialValue = AsyncData.Loading(), key1 = selectedSpace) {
+            roomListDataSource.roomSummariesFlow.collect { summaries ->
+                val filtered = virtualSpacesProvider.filterRoomsForSpace(summaries, selectedSpace)
+                value = AsyncData.Success(filtered)
+            }
         }
         val loadingState by roomListDataSource.loadingState.collectAsState()
         val showEmpty by remember {

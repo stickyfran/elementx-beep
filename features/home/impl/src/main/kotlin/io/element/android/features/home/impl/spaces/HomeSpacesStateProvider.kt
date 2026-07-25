@@ -9,54 +9,36 @@
 package io.element.android.features.home.impl.spaces
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import io.element.android.libraries.matrix.api.core.RoomId
-import io.element.android.libraries.matrix.api.spaces.SpaceRoom
-import io.element.android.libraries.previewutils.room.aSpaceRoom
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceItem
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableSet
 
 open class HomeSpacesStateProvider : PreviewParameterProvider<HomeSpacesState> {
     override val values: Sequence<HomeSpacesState>
         get() = sequenceOf(
             aHomeSpacesState(
-                spaceRooms = SpaceRoomProvider().values.toList(),
-                seenSpaceInvites = setOf(
-                    RoomId("!spaceId3:example.com"),
-                ),
+                spaces = aListOfVirtualSpaces(),
             ),
             aHomeSpacesState(
-                space = CurrentSpace.Space(
-                    spaceRoom = aSpaceRoom(roomId = RoomId("!mySpace:example.com"))
-                ),
-                spaceRooms = aListOfSpaceRooms(),
-            ),
-            aHomeSpacesState(
-                space = CurrentSpace.Root,
-                spaceRooms = emptyList(),
+                spaces = emptyList(),
             ),
         )
 }
 
 internal fun aHomeSpacesState(
-    space: CurrentSpace = CurrentSpace.Root,
-    spaceRooms: List<SpaceRoom> = aListOfSpaceRooms(),
-    seenSpaceInvites: Set<RoomId> = emptySet(),
-    hideInvitesAvatar: Boolean = false,
-    canExploreSpaces: Boolean = true,
+    spaces: List<VirtualSpaceItem> = aListOfVirtualSpaces(),
+    selectedSpaceId: VirtualSpaceId = VirtualSpaceId.AllChats,
     eventSink: (HomeSpacesEvents) -> Unit = {},
 ) = HomeSpacesState(
-    space = space,
-    spaceRooms = spaceRooms.toImmutableList(),
-    seenSpaceInvites = seenSpaceInvites.toImmutableSet(),
-    hideInvitesAvatar = hideInvitesAvatar,
-    canExploreSpaces = canExploreSpaces,
+    spaces = spaces.toImmutableList(),
+    selectedSpaceId = selectedSpaceId,
     eventSink = eventSink,
 )
 
-fun aListOfSpaceRooms(): List<SpaceRoom> {
+fun aListOfVirtualSpaces(): List<VirtualSpaceItem> {
     return listOf(
-        aSpaceRoom(roomId = RoomId("!spaceId0:example.com")),
-        aSpaceRoom(roomId = RoomId("!spaceId1:example.com")),
-        aSpaceRoom(roomId = RoomId("!spaceId2:example.com")),
+        VirtualSpaceItem(id = VirtualSpaceId.AllChats, displayName = "All Chats"),
+        VirtualSpaceItem(id = VirtualSpaceId.NetworkSpace("whatsapp"), displayName = "WhatsApp", networkIcon = 0),
+        VirtualSpaceItem(id = VirtualSpaceId.LabelSpace("label1"), displayName = "Favorites", emoji = "⭐"),
     )
 }

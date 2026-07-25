@@ -50,17 +50,17 @@ fun HomeSpacesView(
     state: HomeSpacesState,
     lazyListState: LazyListState,
     contentPadding: PaddingValues,
-    onSpaceClick: (RoomId) -> Unit,
+    onSpaceClick: (VirtualSpaceId) -> Unit,
     onCreateSpaceClick: () -> Unit,
     onExploreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (state.spaceRooms.isEmpty()) {
+    if (state.spaces.isEmpty()) {
         EmptySpaceHomeView(
             modifier = modifier.padding(contentPadding),
             onCreateSpaceClick = onCreateSpaceClick,
             onExploreClick = onExploreClick,
-            canExploreSpaces = state.canExploreSpaces,
+            canExploreSpaces = false,
         )
     } else {
         LazyColumn(
@@ -68,26 +68,8 @@ fun HomeSpacesView(
             state = lazyListState,
             contentPadding = contentPadding,
         ) {
-            val space = state.space
-            when (space) {
-                CurrentSpace.Root -> {
-                    item {
-                        SpaceHeaderRootView(numberOfSpaces = state.spaceRooms.size)
-                    }
-                }
-                is CurrentSpace.Space -> {
-                    item {
-                        SpaceHeaderView(
-                            avatarData = space.spaceRoom.getAvatarData(AvatarSize.SpaceHeader),
-                            alias = space.spaceRoom.canonicalAlias,
-                            name = space.spaceRoom.displayName,
-                            topic = space.spaceRoom.topic,
-                            visibility = space.spaceRoom.visibility,
-                            heroes = space.spaceRoom.heroes.toImmutableList(),
-                            numberOfMembers = space.spaceRoom.numJoinedMembers,
-                        )
-                    }
-                }
+            item {
+                SpaceHeaderRootView(numberOfSpaces = state.spaces.size)
             }
 
             item {
@@ -95,22 +77,30 @@ fun HomeSpacesView(
             }
 
             itemsIndexed(
-                items = state.spaceRooms,
-                key = { _, spaceRoom -> spaceRoom.roomId }
-            ) { index, spaceRoom ->
-                val isInvitation = spaceRoom.state == CurrentUserMembership.INVITED
-                SpaceRoomItemView(
-                    spaceRoom = spaceRoom,
-                    showUnreadIndicator = isInvitation && spaceRoom.roomId !in state.seenSpaceInvites,
-                    hideAvatars = isInvitation && state.hideInvitesAvatar,
-                    onClick = {
-                        onSpaceClick(spaceRoom.roomId)
-                    },
-                    onLongClick = {
-                        // TODO
-                    },
-                )
-                if (index != state.spaceRooms.lastIndex) {
+                items = state.spaces,
+                key = { _, space -> space.id.hashCode() }
+            ) { index, space ->
+                // TODO: Render VirtualSpaceItem cleanly. For now just text.
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .androidx.compose.foundation.clickable { onSpaceClick(space.id) }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = space.emoji ?: space.displayName.take(1),
+                        style = ElementTheme.typography.fontBodyLgMedium,
+                        modifier = Modifier.padding(end = 16.dp)
+                    )
+                    Text(
+                        text = space.displayName,
+                        style = ElementTheme.typography.fontBodyLgMedium,
+                        color = ElementTheme.colors.textPrimary
+                    )
+                }
+                
+                if (index != state.spaces.lastIndex) {
                     HorizontalDivider()
                 }
             }
