@@ -1,7 +1,7 @@
 import extension.setupDependencyInjection
 
 plugins {
-    id("io.element.android-library")
+    id("io.element.android-compose-library")
 }
 
 android {
