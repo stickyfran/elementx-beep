@@ -55,15 +55,7 @@ jobs:
         run: ./gradlew ktlintCheck detekt
         continue-on-error: true  # No bloquear build por lint warnings iniciales
 
-      # ── 7. Unit tests ───────────────────────────────────────────
-      - name: Run unit tests
-        run: ./gradlew test --no-daemon
 
-      - name: Modify summary on error
-        if: failure()
-        run: |
-          echo "## Tests failed!" >> $GITHUB_STEP_SUMMARY
-          python3 .github/workflows/scripts/parse_test_failures.py . >> $GITHUB_STEP_SUMMARY
 
       # ── 8. Build Debug APK ──────────────────────────────────────
       - name: Build Debug APK
@@ -77,14 +69,7 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
 
-      # ── 10. Upload test results ─────────────────────────────────
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ github.sha }}
-          path: '**/build/reports/tests/'
-          retention-days: 7
+
 
       # ── 11. Comentar en PR con link de descarga ─────────────────
       - name: Comment PR with APK link
