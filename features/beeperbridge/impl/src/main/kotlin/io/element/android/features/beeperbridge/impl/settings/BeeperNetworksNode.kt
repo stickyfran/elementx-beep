@@ -23,7 +23,6 @@ class BeeperNetworksNode @AssistedInject constructor(
     @Assisted plugins: List<Plugin>,
     private val presenter: BeeperNetworksPresenter,
 ) : Node(buildContext, plugins = plugins) {
-
     @Composable
     override fun View(modifier: Modifier) {
         val state = presenter.present()

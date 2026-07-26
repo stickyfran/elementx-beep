@@ -12,7 +12,6 @@ import io.element.android.features.beeperbridge.api.BeeperNetwork
 import org.junit.Test
 
 class FakeDmDetectorTest {
-
     private val detector = FakeDmDetector()
 
     @Test

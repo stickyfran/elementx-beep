@@ -30,20 +30,13 @@ import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.designsystem.atomic.molecules.ButtonColumnMolecule
 import io.element.android.libraries.designsystem.atomic.pages.HeaderFooterPage
 import io.element.android.libraries.designsystem.components.BigIcon
-import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Button
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.TextButton
-import io.element.android.libraries.matrix.api.core.RoomId
-import io.element.android.libraries.matrix.api.room.CurrentUserMembership
 import io.element.android.libraries.matrix.ui.components.SpaceHeaderRootView
-import io.element.android.libraries.matrix.ui.components.SpaceHeaderView
-import io.element.android.libraries.matrix.ui.components.SpaceRoomItemView
-import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.ui.strings.CommonStrings
-import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun HomeSpacesView(
@@ -99,7 +92,7 @@ fun HomeSpacesView(
                         color = ElementTheme.colors.textPrimary
                     )
                 }
-                
+
                 if (index != state.spaces.lastIndex) {
                     HorizontalDivider()
                 }

@@ -12,6 +12,10 @@ import com.google.common.truth.Truth.assertThat
 import im.vector.app.features.analytics.plan.Interaction
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
+import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
+import io.element.android.features.beeperbridge.test.FakeBeeperLabelsRepository
+import io.element.android.features.beeperbridge.test.FakeVirtualSpacesProvider
 import io.element.android.features.home.impl.FakeDateTimeObserver
 import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.datasource.aRoomListRoomSummaryFactory
@@ -664,8 +668,8 @@ class RoomListPresenterTest {
         announcementService: AnnouncementService = FakeAnnouncementService(),
         featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
         markRoomAsRead: MarkRoomAsRead? = null,
-        virtualSpacesProvider: io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider = io.element.android.features.beeperbridge.test.FakeVirtualSpacesProvider(),
-        beeperLabelsRepository: io.element.android.features.beeperbridge.api.BeeperLabelsRepository = io.element.android.features.beeperbridge.test.FakeBeeperLabelsRepository(),
+        virtualSpacesProvider: VirtualSpacesProvider = FakeVirtualSpacesProvider(),
+        beeperLabelsRepository: BeeperLabelsRepository = FakeBeeperLabelsRepository(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },

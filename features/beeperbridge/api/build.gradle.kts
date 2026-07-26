@@ -7,8 +7,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.annotation)
-    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.annotationjvm)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material3)
 }

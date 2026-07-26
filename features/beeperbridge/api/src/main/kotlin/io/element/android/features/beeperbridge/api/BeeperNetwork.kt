@@ -12,7 +12,8 @@ import androidx.annotation.DrawableRes
 enum class BeeperNetwork(
     val displayName: String,
     val colorHex: String,
-    @DrawableRes val iconResId: Int // Placeholder, we will use a generic one if not available
+    // Placeholder, we will use a generic one if not available
+    @DrawableRes val iconResId: Int
 ) {
     WHATSAPP("WhatsApp", "#25D366", android.R.drawable.ic_menu_help),
     INSTAGRAM("Instagram", "#E1306C", android.R.drawable.ic_menu_help),

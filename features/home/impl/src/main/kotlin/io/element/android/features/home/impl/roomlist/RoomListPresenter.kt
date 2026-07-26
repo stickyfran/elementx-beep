@@ -230,7 +230,7 @@ class RoomListPresenter(
         showUnreadCount: Boolean,
     ): RoomListContentState {
         val selectedSpace by virtualSpacesProvider.getSelectedSpace().collectAsState()
-        
+
         val roomSummaries by produceState(initialValue = AsyncData.Loading(), key1 = selectedSpace) {
             roomListDataSource.roomSummariesFlow.collect { summaries ->
                  val filtered = filterRoomsForSpace(summaries, selectedSpace)

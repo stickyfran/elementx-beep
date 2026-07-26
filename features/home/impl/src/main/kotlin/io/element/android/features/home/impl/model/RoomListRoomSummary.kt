@@ -9,6 +9,7 @@
 package io.element.android.features.home.impl.model
 
 import androidx.compose.runtime.Immutable
+import io.element.android.features.beeperbridge.api.BeeperRoomData
 import io.element.android.features.invite.api.InviteData
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.matrix.api.core.RoomAlias
@@ -17,8 +18,6 @@ import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.model.InviteSender
-import io.element.android.features.beeperbridge.api.BeeperRoomData
-import io.element.android.features.beeperbridge.api.BeeperNetwork
 import kotlinx.collections.immutable.ImmutableList
 
 @Immutable

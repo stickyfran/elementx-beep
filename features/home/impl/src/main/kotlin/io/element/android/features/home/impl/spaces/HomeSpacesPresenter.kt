@@ -11,11 +11,9 @@ package io.element.android.features.home.impl.spaces
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Inject
-import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
 import io.element.android.libraries.architecture.Presenter
 import kotlinx.collections.immutable.persistentListOf
@@ -30,7 +28,7 @@ class HomeSpacesPresenter(
         val spaces by remember {
             virtualSpacesProvider.getAvailableSpaces()
         }.collectAsState(persistentListOf())
-        
+
         val selectedSpaceId by virtualSpacesProvider.getSelectedSpace().collectAsState()
 
         fun handleEvent(event: HomeSpacesEvents) {

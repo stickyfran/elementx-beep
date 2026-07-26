@@ -13,20 +13,18 @@ import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceItem
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
 import io.element.android.libraries.di.AppScope
 import kotlinx.coroutines.flow.Flow
-import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 @ContributesBinding(AppScope::class)
 class DefaultVirtualSpacesProvider @Inject constructor(
     private val labelsRepository: BeeperLabelsRepository
 ) : VirtualSpacesProvider {
-
     private val selectedSpaceFlow = MutableStateFlow<VirtualSpaceId>(VirtualSpaceId.AllChats)
 
     override fun getSelectedSpace(): StateFlow<VirtualSpaceId> = selectedSpaceFlow.asStateFlow()
@@ -38,7 +36,7 @@ class DefaultVirtualSpacesProvider @Inject constructor(
     override fun getAvailableSpaces(): Flow<List<VirtualSpaceItem>> {
         return labelsRepository.getLabelsFlow().map { labels ->
             val spaces = mutableListOf<VirtualSpaceItem>()
-            
+
             // 1. All Chats
             spaces.add(
                 VirtualSpaceItem(

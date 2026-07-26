@@ -9,18 +9,17 @@ package io.element.android.features.beeperbridge.impl
 
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
-import io.element.android.libraries.di.AppScope
 import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.BeeperRoomData
+import io.element.android.libraries.di.AppScope
 import java.util.concurrent.ConcurrentHashMap
 
 @ContributesBinding(AppScope::class)
 class BeeperRoomDataProvider @Inject constructor(
     private val fakeDmDetector: FakeDmDetector
 ) : BeeperBridgeService {
-
     private val cache = ConcurrentHashMap<String, BeeperRoomData>()
 
     override fun isEnabled(): Boolean {
@@ -54,7 +53,7 @@ class BeeperRoomDataProvider @Inject constructor(
     override suspend fun refreshRoomData(roomId: String) {
         // Will be implemented when MatrixClient is injected
     }
-    
+
     // For testing and internal updating
     fun updateCache(roomId: String, data: BeeperRoomData) {
         cache[roomId] = data

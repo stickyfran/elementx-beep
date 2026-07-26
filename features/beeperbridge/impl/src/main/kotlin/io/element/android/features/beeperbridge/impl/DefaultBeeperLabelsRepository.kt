@@ -29,7 +29,6 @@ private val Context.beeperLabelsDataStore by preferencesDataStore(name = "beeper
 class DefaultBeeperLabelsRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) : BeeperLabelsRepository {
-
     private val labelsKey = stringPreferencesKey("labels_json")
     private val hiddenNetworksKey = stringPreferencesKey("hidden_networks_json")
 
@@ -98,7 +97,7 @@ class DefaultBeeperLabelsRepository @Inject constructor(
                 for (j in 0 until roomIdsArray.length()) {
                     roomIds.add(roomIdsArray.getString(j))
                 }
-                
+
                 result.add(
                     BeeperLabel(
                         id = obj.getString("id"),
@@ -125,11 +124,11 @@ class DefaultBeeperLabelsRepository @Inject constructor(
             obj.put("emoji", label.emoji)
             obj.put("isShownInInbox", label.isShownInInbox)
             obj.put("createdAt", label.createdAt)
-            
+
             val roomIdsArray = JSONArray()
             label.roomIds.forEach { roomIdsArray.put(it) }
             obj.put("roomIds", roomIdsArray)
-            
+
             array.put(obj)
         }
         return array.toString()

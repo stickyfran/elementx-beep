@@ -37,14 +37,14 @@ class RoomListRoomSummaryFactory(
         val roomInfo = roomSummary.info
         val beeperData = beeperBridgeService.getRoomData(roomSummary.roomId.value)
         val nameOverride = beeperData?.overrideDisplayName ?: roomInfo.name
-        
+
         var avatarData = roomInfo.getAvatarData(size = AvatarSize.RoomListItem)
         if (beeperData?.overrideAvatarUrl != null) {
             avatarData = avatarData.copy(url = beeperData.overrideAvatarUrl, name = nameOverride)
         } else if (nameOverride != roomInfo.name) {
             avatarData = avatarData.copy(name = nameOverride)
         }
-        
+
         return RoomListRoomSummary(
             id = roomSummary.roomId.value,
             roomId = roomSummary.roomId,

@@ -100,7 +100,7 @@ fun PreferencesRootView(
                 showTopDivider = !state.isMultiAccountEnabled,
             )
         }
-        
+
         BeeperSection(
             onOpenBeeperNetworks = onOpenBeeperNetworks
         )

@@ -9,12 +9,12 @@ package io.element.android.features.beeperbridge.impl.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
+import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.designsystem.components.list.ListItemContent
-import io.element.android.libraries.designsystem.theme.components.IconSource
-import io.element.android.compound.tokens.generated.CompoundIcons
 
 @Composable
 fun BeeperNetworksView(

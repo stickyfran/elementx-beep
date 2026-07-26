@@ -38,7 +38,7 @@ object BeeperNetworkMap {
     fun detectNetwork(userId: String): BeeperNetwork? {
         val localpart = userId.substringAfter("@").substringBefore(":")
         val prefix = localpart.substringBefore("_").substringBefore("bot")
-        
+
         return prefixMap[prefix.lowercase()]
     }
 

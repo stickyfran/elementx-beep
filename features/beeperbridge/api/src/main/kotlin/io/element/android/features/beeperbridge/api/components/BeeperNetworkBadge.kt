@@ -32,7 +32,7 @@ fun BeeperNetworkBadge(
     if (network == BeeperNetwork.UNKNOWN) return
 
     val colorHex = android.graphics.Color.parseColor(network.colorHex)
-    
+
     Box(
         modifier = modifier
             .size(size)

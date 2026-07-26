@@ -7,8 +7,8 @@
  */
 package io.element.android.features.beeperbridge.impl
 
-import io.element.android.features.beeperbridge.api.BeeperNetwork
 import dev.zacsweers.metro.Inject
+import io.element.android.features.beeperbridge.api.BeeperNetwork
 
 data class RoomMemberStub(
     val userId: String,
