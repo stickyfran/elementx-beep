@@ -17,7 +17,7 @@ import io.element.android.libraries.di.AppScope
 import java.util.concurrent.ConcurrentHashMap
 
 @ContributesBinding(AppScope::class)
-class BeeperRoomDataProvider @Inject constructor() : BeeperBridgeService {
+class DefaultBeeperBridgeService @Inject constructor() : BeeperBridgeService {
     private val cache = ConcurrentHashMap<String, BeeperRoomData>()
 
     override fun isEnabled(): Boolean {

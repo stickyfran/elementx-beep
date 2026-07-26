@@ -11,8 +11,8 @@ import com.google.common.truth.Truth.assertThat
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import org.junit.Test
 
-class FakeDmDetectorTest {
-    private val detector = FakeDmDetector()
+class BridgedDmDetectorTest {
+    private val detector = BridgedDmDetector()
 
     @Test
     fun `detects valid fake dm`() {
