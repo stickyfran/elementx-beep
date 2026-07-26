@@ -1,4 +1,5 @@
 import extension.setupDependencyInjection
+import extension.testCommonDependencies
 
 plugins {
     id("io.element.android-compose-library")
@@ -14,8 +15,8 @@ dependencies {
     implementation(projects.features.beeperbridge.api)
     implementation(projects.libraries.di)
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.json)
-    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.serialization.json)
+    implementation(libs.coroutines.core)
 
     testCommonDependencies(libs, true)
     testImplementation(projects.libraries.matrix.test)
