@@ -9,11 +9,11 @@ package io.element.android.features.beeperbridge.impl
 
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
-import io.element.android.libraries.di.AppScope
 import io.element.android.libraries.preferences.api.store.PreferenceDataStoreFactory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

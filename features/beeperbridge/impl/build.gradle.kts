@@ -14,6 +14,8 @@ setupDependencyInjection()
 dependencies {
     implementation(projects.features.beeperbridge.api)
     implementation(projects.libraries.di)
+    implementation(projects.libraries.designsystem)
+    implementation(projects.libraries.compound)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.serialization.json)
     implementation(libs.coroutines.core)

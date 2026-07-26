@@ -7,13 +7,13 @@
  */
 package io.element.android.features.beeperbridge.impl
 
+import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.BeeperRoomData
-import io.element.android.libraries.di.AppScope
 import java.util.concurrent.ConcurrentHashMap
 
 @ContributesBinding(AppScope::class)
