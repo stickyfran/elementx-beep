@@ -48,7 +48,7 @@ open class HomeStateProvider : PreviewParameterProvider<HomeState> {
         } + aHomeState(
             currentHomeNavigationBarItem = HomeNavigationBarItem.Spaces,
             homeSpacesState = aHomeSpacesState(
-                spaceRooms = emptyList(),
+                spaces = emptyList(),
             ),
         )
 }
