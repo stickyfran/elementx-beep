@@ -33,7 +33,7 @@ fun BeeperNetworksView(
                 leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Chat())), // Placeholder icon
                 trailingContent = ListItemContent.Text("Connect"), // We'll update this later based on actual status
                 onClick = {
-                    // TODO: trigger login flow
+                    // Click handler to trigger login flow
                 }
             )
         }

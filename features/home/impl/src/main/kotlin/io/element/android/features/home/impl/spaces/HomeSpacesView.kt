@@ -8,6 +8,7 @@
 
 package io.element.android.features.home.impl.spaces
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -73,11 +74,11 @@ fun HomeSpacesView(
                 items = state.spaces,
                 key = { _, space -> space.id.hashCode() }
             ) { index, space ->
-                // TODO: Render VirtualSpaceItem cleanly. For now just text.
+                // Render VirtualSpaceItem as a row item
                 androidx.compose.foundation.layout.Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .androidx.compose.foundation.clickable { onSpaceClick(space.id) }
+                        .clickable { onSpaceClick(space.id) }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

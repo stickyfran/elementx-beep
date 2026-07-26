@@ -7,28 +7,26 @@
  */
 package io.element.android.features.beeperbridge.impl
 
-import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import io.element.android.libraries.preferences.api.store.PreferenceDataStoreFactory
+import timber.log.Timber
 import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
 import io.element.android.libraries.di.AppScope
-import io.element.android.libraries.di.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 import org.json.JSONObject
 
-private val Context.beeperLabelsDataStore by preferencesDataStore(name = "beeper_labels")
-
 @ContributesBinding(AppScope::class)
 class DefaultBeeperLabelsRepository @Inject constructor(
-    @ApplicationContext private val context: Context
+    preferenceDataStoreFactory: PreferenceDataStoreFactory
 ) : BeeperLabelsRepository {
+    private val dataStore = preferenceDataStoreFactory.create("beeper_labels")
     private val labelsKey = stringPreferencesKey("labels_json")
     private val hiddenNetworksKey = stringPreferencesKey("hidden_networks_json")
 
@@ -37,14 +35,14 @@ class DefaultBeeperLabelsRepository @Inject constructor(
     }
 
     override fun getLabelsFlow(): Flow<List<BeeperLabel>> {
-        return context.beeperLabelsDataStore.data.map { prefs ->
+        return dataStore.data.map { prefs ->
             val jsonStr = prefs[labelsKey] ?: "[]"
             parseLabels(jsonStr)
         }
     }
 
     override suspend fun saveLabel(label: BeeperLabel) {
-        context.beeperLabelsDataStore.edit { prefs ->
+        dataStore.edit { prefs ->
             val currentStr = prefs[labelsKey] ?: "[]"
             val currentLabels = parseLabels(currentStr).toMutableList()
             val index = currentLabels.indexOfFirst { it.id == label.id }
@@ -58,7 +56,7 @@ class DefaultBeeperLabelsRepository @Inject constructor(
     }
 
     override suspend fun deleteLabel(labelId: String) {
-        context.beeperLabelsDataStore.edit { prefs ->
+        dataStore.edit { prefs ->
             val currentStr = prefs[labelsKey] ?: "[]"
             val currentLabels = parseLabels(currentStr).toMutableList()
             currentLabels.removeAll { it.id == labelId }
@@ -67,7 +65,7 @@ class DefaultBeeperLabelsRepository @Inject constructor(
     }
 
     override suspend fun getHiddenNetworks(): Set<String> {
-        return context.beeperLabelsDataStore.data.map { prefs ->
+        return dataStore.data.map { prefs ->
             val jsonStr = prefs[hiddenNetworksKey] ?: "[]"
             val array = JSONArray(jsonStr)
             val result = mutableSetOf<String>()
@@ -79,7 +77,7 @@ class DefaultBeeperLabelsRepository @Inject constructor(
     }
 
     override suspend fun setHiddenNetworks(networks: Set<String>) {
-        context.beeperLabelsDataStore.edit { prefs ->
+        dataStore.edit { prefs ->
             val array = JSONArray()
             networks.forEach { array.put(it) }
             prefs[hiddenNetworksKey] = array.toString()
@@ -110,7 +108,7 @@ class DefaultBeeperLabelsRepository @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to parse Beeper labels")
         }
         return result
     }

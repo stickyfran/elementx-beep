@@ -20,9 +20,6 @@ class BeeperNetworksPresenter @Inject constructor() : Presenter<BeeperNetworksSt
         val networks = remember { BeeperNetwork.entries.toList() }
 
         fun handleEvent(event: BeeperNetworksEvent) {
-            when (event) {
-                // Handle events here
-            }
         }
 
         return BeeperNetworksState(
