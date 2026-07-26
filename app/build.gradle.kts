@@ -84,7 +84,24 @@ android {
         getByName("debug") {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
-            storeFile = file("./signature/debug.keystore")
+            val keystoreFile = file("./signature/debug.keystore")
+            if (!keystoreFile.exists()) {
+                keystoreFile.parentFile.mkdirs()
+                project.exec {
+                    commandLine(
+                        "keytool", "-genkey", "-v",
+                        "-keystore", keystoreFile.absolutePath,
+                        "-storepass", "android",
+                        "-alias", "androiddebugkey",
+                        "-keypass", "android",
+                        "-keyalg", "RSA",
+                        "-keysize", "2048",
+                        "-validity", "10000",
+                        "-dname", "CN=Android Debug,O=Android,C=US"
+                    )
+                }
+            }
+            storeFile = keystoreFile
             storePassword = "android"
         }
         register("nightly") {
