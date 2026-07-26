@@ -59,6 +59,12 @@ jobs:
       - name: Run unit tests
         run: ./gradlew test --no-daemon
 
+      - name: Modify summary on error
+        if: failure()
+        run: |
+          echo "## Tests failed!" >> $GITHUB_STEP_SUMMARY
+          python3 .github/workflows/scripts/parse_test_failures.py . >> $GITHUB_STEP_SUMMARY
+
       # ── 8. Build Debug APK ──────────────────────────────────────
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
