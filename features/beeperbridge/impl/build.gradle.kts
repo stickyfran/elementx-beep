@@ -16,4 +16,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.json)
     implementation(libs.kotlinx.coroutines.core)
+
+    testCommonDependencies(libs, true)
+    testImplementation(projects.libraries.matrix.test)
 }
