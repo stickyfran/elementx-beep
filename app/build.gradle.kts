@@ -87,19 +87,17 @@ android {
             val keystoreFile = file("./signature/debug.keystore")
             if (!keystoreFile.exists()) {
                 keystoreFile.parentFile.mkdirs()
-                project.exec {
-                    commandLine(
-                        "keytool", "-genkey", "-v",
-                        "-keystore", keystoreFile.absolutePath,
-                        "-storepass", "android",
-                        "-alias", "androiddebugkey",
-                        "-keypass", "android",
-                        "-keyalg", "RSA",
-                        "-keysize", "2048",
-                        "-validity", "10000",
-                        "-dname", "CN=Android Debug,O=Android,C=US"
-                    )
-                }
+                Runtime.getRuntime().exec(arrayOf(
+                    "keytool", "-genkey", "-v",
+                    "-keystore", keystoreFile.absolutePath,
+                    "-storepass", "android",
+                    "-alias", "androiddebugkey",
+                    "-keypass", "android",
+                    "-keyalg", "RSA",
+                    "-keysize", "2048",
+                    "-validity", "10000",
+                    "-dname", "CN=Android Debug,O=Android,C=US"
+                )).waitFor()
             }
             storeFile = keystoreFile
             storePassword = "android"
