@@ -47,8 +47,8 @@ class DefaultPreferencesEntryPointTest {
                 openSourceLicensesEntryPoint = FakeOpenSourceLicensesEntryPoint(),
                 accountDeactivationEntryPoint = FakeAccountDeactivationEntryPoint(),
                 beeperNetworksEntryPoint = object : io.element.android.features.beeperbridge.api.settings.BeeperNetworksEntryPoint {
-                    override fun createNode(parentNode: com.bumble.appyx.core.node.Node, buildContext: com.bumble.appyx.core.modality.BuildContext): com.bumble.appyx.core.node.Node {
-                        return object : com.bumble.appyx.core.node.Node(buildContext) {}
+                    override fun createNode(parentNode: Node, buildContext: BuildContext): Node {
+                        return object : Node(buildContext) {}
                     }
                 }
             )
