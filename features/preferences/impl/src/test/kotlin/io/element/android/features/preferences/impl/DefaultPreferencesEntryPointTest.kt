@@ -46,6 +46,11 @@ class DefaultPreferencesEntryPointTest {
                 logoutEntryPoint = FakeLogoutEntryPoint(),
                 openSourceLicensesEntryPoint = FakeOpenSourceLicensesEntryPoint(),
                 accountDeactivationEntryPoint = FakeAccountDeactivationEntryPoint(),
+                beeperNetworksEntryPoint = object : io.element.android.features.beeperbridge.api.settings.BeeperNetworksEntryPoint {
+                    override fun createNode(parentNode: com.bumble.appyx.core.node.Node, buildContext: com.bumble.appyx.core.modality.BuildContext): com.bumble.appyx.core.node.Node {
+                        return object : com.bumble.appyx.core.node.Node(buildContext) {}
+                    }
+                }
             )
         }
         val callback = object : PreferencesEntryPoint.Callback {

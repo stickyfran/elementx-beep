@@ -334,6 +334,20 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
+    fun `click on Beeper Networks invokes the expected callback`() = runAndroidComposeUiTest {
+        val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
+        ensureCalledOnce { callback ->
+            setView(
+                aPreferencesRootState(
+                    eventSink = eventsRecorder,
+                ),
+                onOpenBeeperNetworks = callback,
+            )
+            onNodeWithText("Beeper Networks").performClick()
+        }
+    }
+
+    @Test
     fun `when showLabsItem is false, item is not shown`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         setView(
@@ -461,6 +475,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
     onOpenNotificationSettings: () -> Unit = EnsureNeverCalled(),
     onOpenUserProfile: (MatrixUser) -> Unit = EnsureNeverCalledWithParam(),
     onOpenBlockedUsers: () -> Unit = EnsureNeverCalled(),
+    onOpenBeeperNetworks: () -> Unit = EnsureNeverCalled(),
     onSignOutClick: () -> Unit = EnsureNeverCalled(),
     onDeactivateClick: () -> Unit = EnsureNeverCalled(),
 ) {
@@ -483,6 +498,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
             onOpenNotificationSettings = onOpenNotificationSettings,
             onOpenUserProfile = onOpenUserProfile,
             onOpenBlockedUsers = onOpenBlockedUsers,
+            onOpenBeeperNetworks = onOpenBeeperNetworks,
             onSignOutClick = onSignOutClick,
             onDeactivateClick = onDeactivateClick,
         )
