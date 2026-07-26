@@ -11,6 +11,11 @@ concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
+# Enrich gradle.properties for CI/CD to prevent OOM / slow builds
+env:
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx7g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.daemon.jvm.options=-Xmx2g -XX:+UseG1GC
+  CI_GRADLE_ARG_PROPERTIES: --stacktrace --no-daemon -Dsonar.gradle.skipCompile=true --no-configuration-cache
+
 jobs:
   build:
     name: Build & Test
@@ -23,6 +28,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history para versionado
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
+      - name: 💽 Increase swapfile size
+        run: |
+          sudo swapoff -a
+          sudo fallocate -l 8G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          sudo swapon --show
 
       # ── 2. Cache de Gradle ───────────────────────────────────────
       - name: Cache Gradle dependencies
@@ -59,7 +84,7 @@ jobs:
 
       # ── 8. Build Debug APK ──────────────────────────────────────
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug $CI_GRADLE_ARG_PROPERTIES
 
       # ── 9. Upload APK como artifact ─────────────────────────────
       - name: Upload Debug APK
