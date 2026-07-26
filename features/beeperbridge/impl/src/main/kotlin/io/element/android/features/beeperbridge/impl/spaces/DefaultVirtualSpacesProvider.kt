@@ -7,6 +7,7 @@
  */
 package io.element.android.features.beeperbridge.impl.spaces
 
+import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
@@ -14,7 +15,6 @@ import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceItem
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
-import io.element.android.libraries.di.AppScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
