@@ -70,8 +70,8 @@ jobs:
           ELEMENT_CALL_SENTRY_DSN: ${{ secrets.ELEMENT_CALL_SENTRY_DSN }}
           ELEMENT_CALL_POSTHOG_API_HOST: ${{ secrets.ELEMENT_CALL_POSTHOG_API_HOST }}
           ELEMENT_CALL_POSTHOG_API_KEY: ${{ secrets.ELEMENT_CALL_POSTHOG_API_KEY }}
-          ELEMENT_CALL_RAGESHAKE_URL: ${{ secrets.ELEMENT_CALL_RAGESHAKE_URL }}
-        run: ./gradlew :app:assembleGplayDebug :app:assembleFDroidDebug -Dorg.gradle.java.home=$JAVA_HOME -PallWarningsAsErrors=false $CI_GRADLE_ARG_PROPERTIES
+          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
+        run: ./gradlew :app:assembleGplayDebug :app:assembleFDroidDebug -Dorg.gradle.java.home=$JAVA_HOME_21_X64 -PallWarningsAsErrors=false $CI_GRADLE_ARG_PROPERTIES
       - name: Upload debug APKs
         if: ${{ matrix.variant == 'debug' }}
         uses: actions/upload-artifact@v4
