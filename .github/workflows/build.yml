@@ -70,16 +70,13 @@ jobs:
           ELEMENT_CALL_SENTRY_DSN: ${{ secrets.ELEMENT_CALL_SENTRY_DSN }}
           ELEMENT_CALL_POSTHOG_API_HOST: ${{ secrets.ELEMENT_CALL_POSTHOG_API_HOST }}
           ELEMENT_CALL_POSTHOG_API_KEY: ${{ secrets.ELEMENT_CALL_POSTHOG_API_KEY }}
-          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
-        run: ./gradlew :app:assembleGplayDebug :app:assembleFDroidDebug -Dorg.gradle.java.home=$JAVA_HOME_21_X64 -PallWarningsAsErrors=false $CI_GRADLE_ARG_PROPERTIES
+        run: ./gradlew :app:assembleGplayDebug -PallWarningsAsErrors=false $CI_GRADLE_ARG_PROPERTIES
       - name: Upload debug APKs
         if: ${{ matrix.variant == 'debug' }}
         uses: actions/upload-artifact@v4
         with:
           name: elementx-debug
-          path: |
-            app/build/outputs/apk/gplay/debug/*.apk
-            app/build/outputs/apk/fdroid/debug/*.apk
+          path: app/build/outputs/apk/gplay/debug/*.apk
       - uses: rnkdsh/action-upload-diawi@76778fcd1f9f589efaaa62f63d5f03430bbb1306 # v1.5.13
         id: diawi
         # Do not fail the whole build if Diawi upload fails
