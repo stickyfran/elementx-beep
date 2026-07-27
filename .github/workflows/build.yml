@@ -56,6 +56,8 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
+      - name: Inject JDK 21 path into gradle.properties
+        run: echo "org.gradle.java.home=${{ steps.setup-java.outputs.path }}" >> gradle.properties
       - name: Configure gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
@@ -71,8 +73,6 @@ jobs:
           ELEMENT_CALL_SENTRY_DSN: ${{ secrets.ELEMENT_CALL_SENTRY_DSN }}
           ELEMENT_CALL_POSTHOG_API_HOST: ${{ secrets.ELEMENT_CALL_POSTHOG_API_HOST }}
           ELEMENT_CALL_POSTHOG_API_KEY: ${{ secrets.ELEMENT_CALL_POSTHOG_API_KEY }}
-          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
-          GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:+UseG1GC -Dkotlin.daemon.jvm.options=-Xmx4g -Dorg.gradle.java.home=${{ steps.setup-java.outputs.path }}
         run: ./gradlew :app:assembleGplayDebug -PallWarningsAsErrors=false $CI_GRADLE_ARG_PROPERTIES
       - name: Upload debug APKs
         if: ${{ matrix.variant == 'debug' }}
@@ -104,9 +104,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Compile release sources
         if: ${{ matrix.variant == 'release' }}
-        env:
-          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
-          GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:+UseG1GC -Dkotlin.daemon.jvm.options=-Xmx4g -Dorg.gradle.java.home=${{ steps.setup-java.outputs.path }}
         run: |
           ./gradlew assembleGplayRelease -PallWarningsAsErrors=true $CI_GRADLE_ARG_PROPERTIES
           ./gradlew bundleGplayRelease -PallWarningsAsErrors=true $CI_GRADLE_ARG_PROPERTIES
@@ -121,6 +118,4 @@ jobs:
         run: diff /tmp/currentAaptDump.txt ./tools/manifest/gplay/release/aaptDump.txt
       - name: Compile nightly sources
         if: ${{ matrix.variant == 'nightly' }}
-        env:
-          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
         run: ./gradlew compileGplayNightlySources -PallWarningsAsErrors=true $CI_GRADLE_ARG_PROPERTIES

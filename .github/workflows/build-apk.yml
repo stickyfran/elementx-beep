@@ -47,6 +47,10 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      # ── 3b. Inject JDK path into gradle.properties ───────────────
+      - name: Inject JDK 21 path into gradle.properties
+        run: echo "org.gradle.java.home=${{ steps.setup-java.outputs.path }}" >> gradle.properties
+
       # ── 4. Configure Gradle ─────────────────────────────────────
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@v4
