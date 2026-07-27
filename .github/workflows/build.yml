@@ -51,6 +51,7 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref }}
           persist-credentials: false
       - name: Use JDK 21
+        id: setup-java
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
@@ -70,6 +71,7 @@ jobs:
           ELEMENT_CALL_SENTRY_DSN: ${{ secrets.ELEMENT_CALL_SENTRY_DSN }}
           ELEMENT_CALL_POSTHOG_API_HOST: ${{ secrets.ELEMENT_CALL_POSTHOG_API_HOST }}
           ELEMENT_CALL_POSTHOG_API_KEY: ${{ secrets.ELEMENT_CALL_POSTHOG_API_KEY }}
+          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
         run: ./gradlew :app:assembleGplayDebug -PallWarningsAsErrors=false $CI_GRADLE_ARG_PROPERTIES
       - name: Upload debug APKs
         if: ${{ matrix.variant == 'debug' }}
@@ -101,6 +103,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Compile release sources
         if: ${{ matrix.variant == 'release' }}
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
         run: |
           ./gradlew assembleGplayRelease -PallWarningsAsErrors=true $CI_GRADLE_ARG_PROPERTIES
           ./gradlew bundleGplayRelease -PallWarningsAsErrors=true $CI_GRADLE_ARG_PROPERTIES
@@ -115,4 +119,6 @@ jobs:
         run: diff /tmp/currentAaptDump.txt ./tools/manifest/gplay/release/aaptDump.txt
       - name: Compile nightly sources
         if: ${{ matrix.variant == 'nightly' }}
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
         run: ./gradlew compileGplayNightlySources -PallWarningsAsErrors=true $CI_GRADLE_ARG_PROPERTIES
