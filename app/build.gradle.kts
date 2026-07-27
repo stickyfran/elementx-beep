@@ -47,17 +47,17 @@ android {
         versionCode = Versions.VERSION_CODE
         versionName = Versions.VERSION_NAME
 
-        // Keep abiFilter for the universalApk
-        ndk {
-            abiFilters += listOf("arm64-v8a")
-        }
-
         // Ref: https://developer.android.com/studio/build/configure-apk-splits.html#configure-abi-split
         splits {
             // Configures multiple APKs based on ABI.
             abi {
-                // Enables building multiple APKs per ABI. Disabled since we only target arm64-v8a.
-                isEnable = false
+                val buildingAppBundle = gradle.startParameter.taskNames.any { it.contains("bundle") }
+                isEnable = !buildingAppBundle
+                reset()
+                if (!buildingAppBundle) {
+                    include("arm64-v8a")
+                    isUniversalApk = false
+                }
             }
         }
 
