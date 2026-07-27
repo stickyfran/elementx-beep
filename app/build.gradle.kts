@@ -70,30 +70,36 @@ android {
         getByName("debug") {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
-            val keystoreFile = file("./signature/debug.keystore")
-            if (!keystoreFile.exists()) {
+            val keystoreFile = rootProject.file("signature/debug.keystore")
+            if (!keystoreFile.exists() || keystoreFile.length() == 0L) {
                 keystoreFile.parentFile.mkdirs()
-                Runtime.getRuntime().exec(arrayOf(
-                    "keytool",
-                    "-genkey",
-                    "-v",
-                    "-keystore",
-                    keystoreFile.absolutePath,
-                    "-storepass",
-                    "android",
-                    "-alias",
-                    "androiddebugkey",
-                    "-keypass",
-                    "android",
-                    "-keyalg",
-                    "RSA",
-                    "-keysize",
-                    "2048",
-                    "-validity",
-                    "10000",
-                    "-dname",
-                    "CN=Android Debug,O=Android,C=US"
-                )).waitFor()
+                val javaHome = System.getProperty("java.home")
+                val keytoolCmd = if (javaHome != null) "$javaHome/bin/keytool" else "keytool"
+                try {
+                    ProcessBuilder(
+                        keytoolCmd,
+                        "-genkey",
+                        "-v",
+                        "-keystore",
+                        keystoreFile.absolutePath,
+                        "-storepass",
+                        "android",
+                        "-alias",
+                        "androiddebugkey",
+                        "-keypass",
+                        "android",
+                        "-keyalg",
+                        "RSA",
+                        "-keysize",
+                        "2048",
+                        "-validity",
+                        "10000",
+                        "-dname",
+                        "CN=Android Debug,O=Android,C=US"
+                    ).inheritIO().start().waitFor()
+                } catch (e: Exception) {
+                    logger.error("Failed to generate debug.keystore", e)
+                }
             }
             storeFile = keystoreFile
             storePassword = "android"
