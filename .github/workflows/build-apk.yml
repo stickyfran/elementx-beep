@@ -13,7 +13,7 @@ concurrency:
 
 # Enrich gradle.properties for CI/CD to prevent OOM / slow builds
 env:
-  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx8g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:+UseG1GC" -Dkotlin.daemon.jvm.options="-Xmx3g"
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx5g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:+UseG1GC" -Dkotlin.daemon.jvm.options="-Xmx1536m"
 
 jobs:
   build:
@@ -74,7 +74,7 @@ jobs:
 
       # ── 8. Build Debug APK ──────────────────────────────────────
       - name: Build Debug APK
-        run: ./gradlew :app:assembleGplayDebug --stacktrace
+        run: ./gradlew :app:assembleGplayDebug --stacktrace --no-daemon
 
       # ── 9. Upload APK como artifact ─────────────────────────────
       - name: Upload Debug APK
