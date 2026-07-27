@@ -75,14 +75,16 @@ jobs:
 
       # ── 8. Build Debug APK ──────────────────────────────────────
       - name: Build Debug APK
-        run: ./gradlew :app:assembleGplayDebug $CI_GRADLE_ARG_PROPERTIES
+        run: ./gradlew :app:assembleGplayDebug app:assembleFDroidDebug -PallWarningsAsErrors=false $CI_GRADLE_ARG_PROPERTIES
 
       # ── 9. Upload APK como artifact ─────────────────────────────
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: elementx-beep-debug-${{ github.sha }}
-          path: app/build/outputs/apk/gplay/debug/*.apk
+          path: |
+            app/build/outputs/apk/gplay/debug/*.apk
+            app/build/outputs/apk/fdroid/debug/*.apk
           retention-days: 14
 
 
