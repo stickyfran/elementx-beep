@@ -59,6 +59,7 @@ jobs:
       - name: Build Debug APK
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
+          GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:+UseG1GC -Dkotlin.daemon.jvm.options=-Xmx2g -Dorg.gradle.java.home=${{ steps.setup-java.outputs.path }}
         run: ./gradlew :app:assembleGplayDebug --no-configuration-cache --stacktrace
 
       # ── 7. Upload APK artifact ───────────────────────────────────
