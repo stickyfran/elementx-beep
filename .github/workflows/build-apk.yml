@@ -49,16 +49,9 @@ jobs:
           sudo swapon /mnt/swapfile
           sudo swapon --show
 
-      # ── 2. Cache de Gradle ───────────────────────────────────────
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', '**/gradle.properties', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
+      # ── 2. Configure Gradle ─────────────────────────────────────
+      - name: Configure Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       # ── 3. Setup JDK 21 ─────────────────────────────────────────
       - name: Set up JDK 21
@@ -80,18 +73,16 @@ jobs:
         run: ./gradlew ktlintCheck detekt
         continue-on-error: true  # No bloquear build por lint warnings iniciales
 
-
-
       # ── 8. Build Debug APK ──────────────────────────────────────
       - name: Build Debug APK
-        run: ./gradlew assembleDebug $CI_GRADLE_ARG_PROPERTIES
+        run: ./gradlew :app:assembleGplayDebug $CI_GRADLE_ARG_PROPERTIES
 
       # ── 9. Upload APK como artifact ─────────────────────────────
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: elementx-beep-debug-${{ github.sha }}
-          path: app/build/outputs/apk/**/*.apk
+          path: app/build/outputs/apk/gplay/debug/*.apk
           retention-days: 14
 
 
