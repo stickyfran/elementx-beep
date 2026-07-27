@@ -35,13 +35,7 @@ internal object RoomListFilterMapper {
      * - OR space invites (pending space invitations)
      * - With version deduplication enabled
      */
-    private val RUST_BASE_FILTERS = listOf(
-        Any(
-            listOf(
-                All(listOf(NonSpace, NonLeft)),
-                All(listOf(Space, Invite)),
-            )
-        ),
+    private val RUST_BASE_FILTERS = listOf<RoomListEntriesDynamicFilterKind>(
         DeduplicateVersions
     )
 
