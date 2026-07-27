@@ -61,7 +61,7 @@ jobs:
 
       # ── 8. Build Debug APK ──────────────────────────────────────
       - name: Build Debug APK
-        run: ./gradlew :app:assembleGplayDebug --stacktrace
+        run: ./gradlew :app:assembleGplayDebug -Dorg.gradle.java.home=$JAVA_HOME --stacktrace
 
       # ── 9. Upload APK como artifact ─────────────────────────────
       - name: Upload Debug APK
