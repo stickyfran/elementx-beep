@@ -13,6 +13,7 @@ concurrency:
 
 # Enrich gradle.properties for CI/CD to prevent OOM / slow builds
 env:
+  JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}
   GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx5g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:+UseG1GC" -Dkotlin.daemon.jvm.options="-Xmx1536m"
 
 jobs:
