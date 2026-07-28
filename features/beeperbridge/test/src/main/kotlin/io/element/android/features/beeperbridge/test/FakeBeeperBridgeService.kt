@@ -12,6 +12,9 @@ import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.BeeperRoomData
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+
 class FakeBeeperBridgeService : BeeperBridgeService {
     var isEnabledToReturn = true
     var roomDataToReturn: BeeperRoomData? = null
@@ -26,6 +29,7 @@ class FakeBeeperBridgeService : BeeperBridgeService {
     override fun isFakeDm(roomId: String) = isFakeDmToReturn
     override fun getLabels() = labelsToReturn
     override fun getHiddenNetworks() = hiddenNetworksToReturn
+    override val cacheUpdates: Flow<String> = emptyFlow()
     override suspend fun invalidateCache() {}
     override suspend fun refreshRoomData(roomId: String) {}
 }

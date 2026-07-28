@@ -83,16 +83,26 @@ class DefaultBeeperBridgeService @Inject constructor(
                     roomName = roomName,
                     members = membersList
                 )
-                
-                Timber.d("BeeperBridge: refreshRoomData for $roomId - members: ${membersList.size}, rawName: '$roomName', isFakeDm: ${result.isFakeDm}, network: ${result.network}")
+
+                Timber.d(
+                    "BeeperBridge: refreshRoomData for %s - members: %d, rawName: '%s', isFakeDm: %b, network: %s",
+                    roomId,
+                    membersList.size,
+                    roomName,
+                    result.isFakeDm,
+                    result.network
+                )
+
+                val contactDisplayName = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.displayName else null
+                val contactAvatarUrl = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.avatarUrl else null
 
                 val beeperData = BeeperRoomData(
                     network = result.network ?: BeeperNetwork.UNKNOWN,
                     isFakeDm = result.isFakeDm,
                     botMxid = result.botMxid,
                     realContactMxid = result.contactMxid,
-                    overrideDisplayName = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.displayName else null,
-                    overrideAvatarUrl = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.avatarUrl else null,
+                    overrideDisplayName = contactDisplayName,
+                    overrideAvatarUrl = contactAvatarUrl,
                     networkKey = result.network?.name?.lowercase(),
                     fromCache = false
                 )
