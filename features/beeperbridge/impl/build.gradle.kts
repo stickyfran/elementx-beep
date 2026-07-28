@@ -14,6 +14,7 @@ setupDependencyInjection()
 dependencies {
     implementation(projects.features.beeperbridge.api)
     implementation(projects.libraries.di)
+    implementation(projects.libraries.matrix.api)
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.compound)
     implementation(projects.libraries.architecture)
