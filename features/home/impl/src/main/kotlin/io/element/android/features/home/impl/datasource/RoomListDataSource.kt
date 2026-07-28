@@ -10,6 +10,7 @@ package io.element.android.features.home.impl.datasource
 
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.libraries.androidutils.diff.DiffCacheUpdater
 import io.element.android.libraries.androidutils.diff.MutableListDiffCache
@@ -60,10 +61,12 @@ class RoomListDataSource(
     private val sessionCoroutineScope: CoroutineScope,
     private val dateTimeObserver: DateTimeObserver,
     private val analyticsService: AnalyticsService,
+    private val beeperBridgeService: BeeperBridgeService,
 ) {
     init {
         observeNotificationSettings()
         observeDateTimeChanges()
+        observeBeeperBridgeUpdates()
     }
 
     private val roomList = roomListService.createRoomList(
@@ -141,6 +144,14 @@ class RoomListDataSource(
                     is DateTimeObserver.Event.TimeZoneChanged -> rebuildAllRoomSummaries()
                     is DateTimeObserver.Event.DateChanged -> rebuildAllRoomSummaries()
                 }
+            }
+            .launchIn(sessionCoroutineScope)
+    }
+
+    private fun observeBeeperBridgeUpdates() {
+        beeperBridgeService.cacheUpdates
+            .onEach {
+                rebuildAllRoomSummaries()
             }
             .launchIn(sessionCoroutineScope)
     }

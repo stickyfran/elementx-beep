@@ -12,7 +12,9 @@ import io.element.android.features.beeperbridge.api.BeeperNetwork
 
 data class RoomMemberStub(
     val userId: String,
-    val isLocalUser: Boolean
+    val isLocalUser: Boolean,
+    val avatarUrl: String? = null,
+    val displayName: String? = null
 )
 
 data class BridgedDmResult(

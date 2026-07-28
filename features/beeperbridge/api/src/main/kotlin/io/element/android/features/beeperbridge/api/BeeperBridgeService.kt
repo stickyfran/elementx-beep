@@ -14,6 +14,7 @@ interface BeeperBridgeService {
     fun isFakeDm(roomId: String): Boolean
     fun getLabels(): List<BeeperLabel>
     fun getHiddenNetworks(): Set<String>
+    val cacheUpdates: kotlinx.coroutines.flow.Flow<String>
     suspend fun invalidateCache()
     suspend fun refreshRoomData(roomId: String)
 }

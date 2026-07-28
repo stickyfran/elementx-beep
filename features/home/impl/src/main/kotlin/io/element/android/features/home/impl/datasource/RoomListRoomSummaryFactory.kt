@@ -27,15 +27,27 @@ import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.model.toInviteSender
 import kotlinx.collections.immutable.toImmutableList
 
+import io.element.android.libraries.di.annotations.SessionCoroutineScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
 @Inject
 class RoomListRoomSummaryFactory(
     private val dateFormatter: DateFormatter,
     private val roomLatestEventFormatter: RoomLatestEventFormatter,
     private val beeperBridgeService: BeeperBridgeService,
+    @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
 ) {
     fun create(roomSummary: RoomSummary): RoomListRoomSummary {
         val roomInfo = roomSummary.info
-        val beeperData = beeperBridgeService.getRoomData(roomSummary.roomId.value)
+        var beeperData = beeperBridgeService.getRoomData(roomSummary.roomId.value)
+        
+        if (beeperData == null) {
+            sessionCoroutineScope.launch {
+                beeperBridgeService.refreshRoomData(roomSummary.roomId.value)
+            }
+        }
+        
         val nameOverride = beeperData?.overrideDisplayName ?: roomInfo.name
 
         var avatarData = roomInfo.getAvatarData(size = AvatarSize.RoomListItem)
