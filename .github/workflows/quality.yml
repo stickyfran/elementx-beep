@@ -76,6 +76,8 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
+      - name: Inject JDK 21 path into gradle.properties
+        run: echo "org.gradle.java.home=$JAVA_HOME" >> gradle.properties
       - name: Configure gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
@@ -119,6 +121,8 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
+      - name: Inject JDK 21 path into gradle.properties
+        run: echo "org.gradle.java.home=$JAVA_HOME" >> gradle.properties
       - name: Configure gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
@@ -164,6 +168,8 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
+      - name: Inject JDK 21 path into gradle.properties
+        run: echo "org.gradle.java.home=$JAVA_HOME" >> gradle.properties
       - name: Configure gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
@@ -202,6 +208,8 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
+      - name: Inject JDK 21 path into gradle.properties
+        run: echo "org.gradle.java.home=$JAVA_HOME" >> gradle.properties
       - name: Configure gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
@@ -251,6 +259,8 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
+      - name: Inject JDK 21 path into gradle.properties
+        run: echo "org.gradle.java.home=$JAVA_HOME" >> gradle.properties
       - name: Configure gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
@@ -296,6 +306,8 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
+      - name: Inject JDK 21 path into gradle.properties
+        run: echo "org.gradle.java.home=$JAVA_HOME" >> gradle.properties
       - name: Configure gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
