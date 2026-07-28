@@ -67,7 +67,7 @@ class DefaultBeeperBridgeService @Inject constructor(
             val members = room.getMembers(limit = 10).getOrNull() ?: emptyList()
             
             // The roomName here should be the explicit m.room.name state event if it exists
-            val roomName = room.name
+            val roomName = room.info().name
             
             val membersList = members.map { member ->
                 RoomMemberStub(
