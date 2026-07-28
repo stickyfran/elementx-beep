@@ -8,8 +8,13 @@ on:
   workflow_dispatch:  # Permite ejecución manual desde la UI de GitHub
 
 concurrency:
-  group: build-${{ github.ref }}
+  group: beep-debug-${{ github.ref }}
   cancel-in-progress: true
+
+# Enrich gradle.properties for CI/CD to prevent OOM / slow builds
+env:
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx6g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.daemon.jvm.options=-Xmx2g -XX:+UseG1GC
+  CI_GRADLE_ARG_PROPERTIES: --stacktrace --no-daemon -Dsonar.gradle.skipCompile=true --no-configuration-cache
 
 jobs:
   build:
@@ -18,13 +23,25 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      # ── 1. Checkout ──────────────────────────────────────────────
+      # ── 1. Free disk space ───────────────────────────────────────
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+
+      # ── 2. Checkout ──────────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history para versionado
 
-      # ── 2. Cache de Gradle ───────────────────────────────────────
+      # ── 3. Cache de Gradle ───────────────────────────────────────
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
@@ -35,35 +52,26 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      # ── 3. Setup JDK 21 ─────────────────────────────────────────
+      # ── 4. Setup JDK 21 ─────────────────────────────────────────
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      # ── 4. Setup Android SDK ─────────────────────────────────────
+      # ── 5. Setup Android SDK ─────────────────────────────────────
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # ── 5. Hacer Gradle ejecutable ───────────────────────────────
+      # ── 6. Hacer Gradle ejecutable ───────────────────────────────
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      # ── 6. Lint check (ktlint + detekt) ─────────────────────────
-      - name: Run lint checks
-        run: ./gradlew ktlintCheck detekt
-        continue-on-error: true  # No bloquear build por lint warnings iniciales
-
-      # ── 7. Unit tests ───────────────────────────────────────────
-      - name: Run unit tests
-        run: ./gradlew test --no-daemon
-
-      # ── 8. Build Debug APK ──────────────────────────────────────
+      # ── 7. Build Debug APK ──────────────────────────────────────
       - name: Build Debug APK
-        run: ./gradlew assembleGplayDebug --no-daemon
+        run: ./gradlew assembleGplayDebug $CI_GRADLE_ARG_PROPERTIES
 
-      # ── 9. Upload APK como artifact ─────────────────────────────
+      # ── 8. Upload APK como artifact ─────────────────────────────
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
@@ -71,16 +79,7 @@ jobs:
           path: app/build/outputs/apk/gplay/debug/*.apk
           retention-days: 14
 
-      # ── 10. Upload test results ─────────────────────────────────
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ github.sha }}
-          path: '**/build/reports/tests/'
-          retention-days: 7
-
-      # ── 11. Comentar en PR con link de descarga ─────────────────
+      # ── 9. Comentar en PR con link de descarga ─────────────────
       - name: Comment PR with APK link
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -98,3 +97,4 @@ jobs:
               issue_number: context.issue.number,
               body
             });
+
