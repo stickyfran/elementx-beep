@@ -30,10 +30,7 @@ import org.matrix.rustcomponents.sdk.RoomListFilterCategory
 internal object RoomListFilterMapper {
     /**
      * Base rust filters to always apply across all room lists.
-     * These filters ensure we show:
-     * - Non-space, non-left rooms (regular rooms user is part of)
-     * - OR space invites (pending space invitations)
-     * - With version deduplication enabled
+     * With version deduplication enabled.
      */
     private val RUST_BASE_FILTERS = listOf<RoomListEntriesDynamicFilterKind>(
         DeduplicateVersions
@@ -44,17 +41,25 @@ internal object RoomListFilterMapper {
      * Applies base filters along with the provided filter.
      */
     fun toRustFilter(filter: RoomListFilter): RoomListEntriesDynamicFilterKind {
-        return All(RUST_BASE_FILTERS + mapFilter(filter))
+        val mapped = mapFilter(filter)
+        val allFilters = if (mapped != null) RUST_BASE_FILTERS + mapped else RUST_BASE_FILTERS
+        return if (allFilters.size == 1) allFilters.first() else All(allFilters)
     }
 
     /**
      * Maps a RoomListFilter to its Rust SDK equivalent.
-     * This replaces the previous RoomListFilter.into() extension function.
+     * Returns null for empty All/Any filters to avoid empty filter lists matching no rooms in Rust SDK.
      */
-    private fun mapFilter(filter: RoomListFilter): RoomListEntriesDynamicFilterKind {
+    private fun mapFilter(filter: RoomListFilter): RoomListEntriesDynamicFilterKind? {
         return when (filter) {
-            is RoomListFilter.All -> All(filters = filter.filters.map { mapFilter(it) })
-            is RoomListFilter.Any -> Any(filters = filter.filters.map { mapFilter(it) })
+            is RoomListFilter.All -> {
+                val mapped = filter.filters.mapNotNull { mapFilter(it) }
+                if (mapped.isEmpty()) null else All(filters = mapped)
+            }
+            is RoomListFilter.Any -> {
+                val mapped = filter.filters.mapNotNull { mapFilter(it) }
+                if (mapped.isEmpty()) null else Any(filters = mapped)
+            }
             is RoomListFilter.Identifiers -> Identifiers(identifiers = filter.values.map { it.value })
             RoomListFilter.None -> None
             RoomListFilter.Category.Group -> Category(RoomListFilterCategory.GROUP)
