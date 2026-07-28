@@ -40,10 +40,6 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
-      - name: Inject JDK 21 path into Gradle User Home
-        run: |
-          mkdir -p ~/.gradle
-          echo "org.gradle.java.home=$JAVA_HOME" >> ~/.gradle/gradle.properties
       - name: Build and upload Nightly application
         run: |
           ./gradlew assembleGplayNightly appDistributionUploadGplayNightly $CI_GRADLE_ARG_PROPERTIES
