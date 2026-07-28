@@ -68,7 +68,10 @@ android {
 
     signingConfigs {
         getByName("debug") {
-            // Use AGP default debug signing configuration
+            storeFile = file("./signature/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
         register("nightly") {
             keyAlias = System.getenv("ELEMENT_ANDROID_NIGHTLY_KEYID")
