@@ -331,7 +331,8 @@ class RoomListPresenter(
         rooms: List<RoomListRoomSummary>,
         spaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
     ): List<RoomListRoomSummary> {
-        return when (spaceId) {
+        timber.log.Timber.d("BeeperBridge: filterRoomsForSpace IN with ${rooms.size} rooms, spaceId: ${spaceId.javaClass.simpleName}")
+        val result = when (spaceId) {
             is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats -> {
                 val hiddenNetworks = beeperLabelsRepository.getHiddenNetworks()
                 rooms.filter { room ->
@@ -360,5 +361,7 @@ class RoomListPresenter(
                 rooms
             }
         }
+        timber.log.Timber.d("BeeperBridge: filterRoomsForSpace OUT with ${result.size} rooms")
+        return result
     }
 }

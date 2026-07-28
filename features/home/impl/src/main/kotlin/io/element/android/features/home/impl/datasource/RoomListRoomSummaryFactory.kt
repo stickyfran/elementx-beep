@@ -48,7 +48,10 @@ class RoomListRoomSummaryFactory(
             }
         }
         
-        val nameOverride = beeperData?.overrideDisplayName ?: roomInfo.name
+        val nameOverride = beeperData?.overrideDisplayName?.takeIf { it.isNotBlank() } 
+            ?: roomInfo.name?.takeIf { it.isNotBlank() }
+            ?: roomInfo.rawName?.takeIf { it.isNotBlank() }
+            ?: "Empty Room"
 
         var avatarData = roomInfo.getAvatarData(size = AvatarSize.RoomListItem)
         if (beeperData?.overrideAvatarUrl != null) {

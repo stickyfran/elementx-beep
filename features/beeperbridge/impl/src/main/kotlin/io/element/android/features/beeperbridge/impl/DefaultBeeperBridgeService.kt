@@ -63,40 +63,43 @@ class DefaultBeeperBridgeService @Inject constructor(
         if (cache.containsKey(roomId)) return
 
         try {
-            val room = matrixClient.getRoom(RoomId(roomId)) ?: return
-            val members = room.getMembers(limit = 10).getOrNull() ?: emptyList()
+            matrixClient.getRoom(RoomId(roomId))?.use { room ->
+                val members = room.getMembers(limit = 10).getOrNull() ?: emptyList()
 
-            // The roomName here should be the explicit m.room.name state event if it exists
-            val roomName = room.info().name
+                // Use rawName instead of name, as name is a computed fallback by the SDK
+                // rawName maps to the actual m.room.name state event which is what the heuristic needs
+                val roomName = room.info().rawName
 
-            val membersList = members.map { member ->
-                RoomMemberStub(
-                    userId = member.userId.value,
-                    isLocalUser = member.userId == matrixClient.sessionId,
-                    avatarUrl = member.avatarUrl,
-                    displayName = member.displayName
+                val membersList = members.map { member ->
+                    RoomMemberStub(
+                        userId = member.userId.value,
+                        isLocalUser = member.userId == matrixClient.sessionId,
+                        avatarUrl = member.avatarUrl,
+                        displayName = member.displayName
+                    )
+                }
+
+                val result = bridgedDmDetector.analyze(
+                    roomName = roomName,
+                    members = membersList
                 )
+                
+                Timber.d("BeeperBridge: refreshRoomData for $roomId - members: ${membersList.size}, rawName: '$roomName', isFakeDm: ${result.isFakeDm}, network: ${result.network}")
+
+                val beeperData = BeeperRoomData(
+                    network = result.network ?: BeeperNetwork.UNKNOWN,
+                    isFakeDm = result.isFakeDm,
+                    botMxid = result.botMxid,
+                    realContactMxid = result.contactMxid,
+                    overrideDisplayName = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.displayName else null,
+                    overrideAvatarUrl = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.avatarUrl else null,
+                    networkKey = result.network?.name?.lowercase(),
+                    fromCache = false
+                )
+
+                cache[roomId] = beeperData
+                _cacheUpdates.tryEmit(roomId)
             }
-
-            val result = bridgedDmDetector.analyze(
-                roomName = roomName,
-                members = membersList
-            )
-
-            val beeperData = BeeperRoomData(
-                network = result.network ?: BeeperNetwork.UNKNOWN,
-                isFakeDm = result.isFakeDm,
-                botMxid = result.botMxid,
-                realContactMxid = result.contactMxid,
-                overrideDisplayName = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.displayName else null,
-                overrideAvatarUrl = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.avatarUrl else null,
-                networkKey = result.network?.name?.lowercase(),
-                fromCache = false
-            )
-
-            cache[roomId] = beeperData
-            _cacheUpdates.tryEmit(roomId)
-
         } catch (e: Exception) {
             Timber.e(e, "Failed to refresh Beeper room data for $roomId")
         }

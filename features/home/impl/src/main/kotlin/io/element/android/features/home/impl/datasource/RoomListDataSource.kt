@@ -86,7 +86,15 @@ class RoomListDataSource(
 
     val loadingState = roomList.loadingState
 
+    fun loadAllRooms() {
+        sessionCoroutineScope.launch {
+            timber.log.Timber.d("BeeperBridge: Force loading all rooms (0..1000)")
+            updateVisibleRange(0..1000)
+        }
+    }
+
     fun launchIn(coroutineScope: CoroutineScope): Job {
+        loadAllRooms()
         return roomList
             .summaries
             .onEach { roomSummaries ->
@@ -157,6 +165,10 @@ class RoomListDataSource(
     }
 
     private suspend fun replaceWith(roomSummaries: List<RoomSummary>) = withContext(coroutineDispatchers.computation) {
+        timber.log.Timber.d("BeeperBridge: RoomListDataSource replaceWith called with ${roomSummaries.size} summaries")
+        // Log the first few rooms to see if bridged ones are present
+        val firstFew = roomSummaries.take(5).joinToString { it.info.name ?: it.info.rawName ?: "Unknown" }
+        timber.log.Timber.d("BeeperBridge: First few rooms: $firstFew")
         lock.withLock {
             diffCacheUpdater.updateWith(roomSummaries)
             buildAndEmitAllRooms(roomSummaries)
