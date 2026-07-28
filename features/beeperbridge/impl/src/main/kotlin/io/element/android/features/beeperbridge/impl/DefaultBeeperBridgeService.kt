@@ -27,7 +27,7 @@ class DefaultBeeperBridgeService @Inject constructor(
     private val bridgedDmDetector: BridgedDmDetector,
 ) : BeeperBridgeService {
     private val cache = ConcurrentHashMap<String, BeeperRoomData>()
-    
+
     private val _cacheUpdates = MutableSharedFlow<String>(extraBufferCapacity = 64)
     override val cacheUpdates: Flow<String> = _cacheUpdates
 
@@ -61,14 +61,14 @@ class DefaultBeeperBridgeService @Inject constructor(
 
     override suspend fun refreshRoomData(roomId: String) {
         if (cache.containsKey(roomId)) return
-        
+
         try {
             val room = matrixClient.getRoom(RoomId(roomId)) ?: return
             val members = room.getMembers(limit = 10).getOrNull() ?: emptyList()
-            
+
             // The roomName here should be the explicit m.room.name state event if it exists
             val roomName = room.info().name
-            
+
             val membersList = members.map { member ->
                 RoomMemberStub(
                     userId = member.userId.value,
@@ -77,12 +77,12 @@ class DefaultBeeperBridgeService @Inject constructor(
                     displayName = member.displayName
                 )
             }
-            
+
             val result = bridgedDmDetector.analyze(
                 roomName = roomName,
                 members = membersList
             )
-            
+
             val beeperData = BeeperRoomData(
                 network = result.network ?: BeeperNetwork.UNKNOWN,
                 isFakeDm = result.isFakeDm,
@@ -93,10 +93,10 @@ class DefaultBeeperBridgeService @Inject constructor(
                 networkKey = result.network?.name?.lowercase(),
                 fromCache = false
             )
-            
+
             cache[roomId] = beeperData
             _cacheUpdates.tryEmit(roomId)
-            
+
         } catch (e: Exception) {
             Timber.e(e, "Failed to refresh Beeper room data for $roomId")
         }
