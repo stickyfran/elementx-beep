@@ -87,10 +87,6 @@ class RoomListDataSource(
         return roomList
             .summaries
             .onEach { roomSummaries ->
-                Timber.d("BEEPER_DEBUG: roomList.summaries updated with ${roomSummaries.size} rooms")
-                roomSummaries.forEach { summary ->
-                    Timber.d("BEEPER_DEBUG: Room id=${summary.roomId()}, name=${summary.name()}")
-                }
                 replaceWith(roomSummaries)
             }
             .launchIn(coroutineScope)
