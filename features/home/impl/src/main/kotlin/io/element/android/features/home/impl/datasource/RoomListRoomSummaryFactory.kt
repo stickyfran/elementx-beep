@@ -17,6 +17,7 @@ import io.element.android.libraries.core.extensions.orEmpty
 import io.element.android.libraries.dateformatter.api.DateFormatter
 import io.element.android.libraries.dateformatter.api.DateFormatterMode
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
+import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.eventformatter.api.RoomLatestEventFormatter
 import io.element.android.libraries.matrix.api.room.CallIntentConsensus
 import io.element.android.libraries.matrix.api.room.CurrentUserMembership
@@ -26,8 +27,6 @@ import io.element.android.libraries.matrix.ui.model.dmUserStatus
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.model.toInviteSender
 import kotlinx.collections.immutable.toImmutableList
-
-import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -41,14 +40,14 @@ class RoomListRoomSummaryFactory(
     fun create(roomSummary: RoomSummary): RoomListRoomSummary {
         val roomInfo = roomSummary.info
         var beeperData = beeperBridgeService.getRoomData(roomSummary.roomId.value)
-        
+
         if (beeperData == null) {
             sessionCoroutineScope.launch {
                 beeperBridgeService.refreshRoomData(roomSummary.roomId.value)
             }
         }
-        
-        val nameOverride = beeperData?.overrideDisplayName?.takeIf { it.isNotBlank() } 
+
+        val nameOverride = beeperData?.overrideDisplayName?.takeIf { it.isNotBlank() }
             ?: roomInfo.name?.takeIf { it.isNotBlank() }
             ?: roomInfo.rawName?.takeIf { it.isNotBlank() }
             ?: "Empty Room"
