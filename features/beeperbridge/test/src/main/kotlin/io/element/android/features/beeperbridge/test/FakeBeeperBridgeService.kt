@@ -11,7 +11,6 @@ import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.BeeperRoomData
-
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 

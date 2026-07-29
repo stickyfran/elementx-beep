@@ -8,4 +8,5 @@ android {
 
 dependencies {
     implementation(projects.features.beeperbridge.api)
+    implementation(libs.coroutines.core)
 }
