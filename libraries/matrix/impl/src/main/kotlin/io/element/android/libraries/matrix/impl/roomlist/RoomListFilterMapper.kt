@@ -16,8 +16,6 @@ import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.Deduplicat
 import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.Favourite
 import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.Identifiers
 import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.Invite
-import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.NonLeft
-import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.NonSpace
 import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.None
 import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.NormalizedMatchRoomName
 import org.matrix.rustcomponents.sdk.RoomListEntriesDynamicFilterKind.Space
