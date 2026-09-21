@@ -95,6 +95,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -195,15 +196,12 @@ class MessagesPresenter(
             mutableStateOf(false)
         }
 
-        val isManualReadEnabled by remember {
-            sessionPreferencesStore.isManualReadReceiptsEnabled()
-        }.collectAsState(initial = false)
-
         LaunchedEffect(Unit) {
             // Remove the unread flag on entering but don't send read receipts
             // as those will be handled by the timeline.
             withContext(dispatchers.io) {
-                if (!isManualReadEnabled) {
+                val isManualRead = sessionPreferencesStore.isManualReadReceiptsEnabled().first()
+                if (!isManualRead) {
                     room.setUnreadFlag(isUnread = false)
                 }
 
@@ -288,7 +286,8 @@ class MessagesPresenter(
                 }
                 is MessagesEvent.MarkAsFullyReadAndExit -> if (!markingAsReadAndExiting.getAndSet(true)) {
                     coroutineScope.launch {
-                        if (!isManualReadEnabled) {
+                        val isManualRead = sessionPreferencesStore.isManualReadReceiptsEnabled().first()
+                        if (!isManualRead) {
                             val latestEventId = room.liveTimeline.getLatestEventId().getOrElse {
                                 Timber.w(it, "Failed to get latest event id to mark as fully read")
                                 null
