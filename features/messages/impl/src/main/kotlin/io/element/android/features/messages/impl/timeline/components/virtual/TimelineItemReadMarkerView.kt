@@ -9,7 +9,6 @@
 package io.element.android.features.messages.impl.timeline.components.virtual
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,7 +40,7 @@ internal fun TimelineItemReadMarkerView(
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 18.dp),
         horizontalAlignment = Alignment.End,
-        verticalArrangement = spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             text = stringResource(id = R.string.screen_room_timeline_read_marker_title).uppercase(),
@@ -76,11 +75,20 @@ internal fun TimelineItemReadMarkerView(
 @PreviewsDayNight
 @Composable
 internal fun TimelineItemReadMarkerViewPreview() = ElementPreview {
-    TimelineItemReadMarkerView()
+    ContentToPreview(onMarkAsReadClick = null)
 }
 
 @PreviewsDayNight
 @Composable
 internal fun TimelineItemReadMarkerViewWithButtonPreview() = ElementPreview {
-    TimelineItemReadMarkerView(onMarkAsReadClick = {})
+    ContentToPreview(onMarkAsReadClick = {})
+}
+
+@Composable
+private fun ContentToPreview(
+    onMarkAsReadClick: (() -> Unit)? = null,
+) {
+    TimelineItemReadMarkerView(
+        onMarkAsReadClick = onMarkAsReadClick,
+    )
 }

@@ -59,10 +59,6 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # ── 5. Setup Android SDK ─────────────────────────────────────
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       # ── 6. Hacer Gradle ejecutable ───────────────────────────────
       - name: Make Gradle executable
         run: chmod +x ./gradlew

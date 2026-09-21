@@ -35,10 +35,10 @@ data class TimelineState(
     val displayThreadSummaries: Boolean,
     val displayJumpToUnread: Boolean,
     val jumpToUnread: JumpToUnreadState,
-    val isManualReadReceiptsEnabled: Boolean = false,
-    val isShowManualReadBannerEnabled: Boolean = true,
-    val isShowManualReadBottomEnabled: Boolean = true,
-    val isShowManualReadInputBarEnabled: Boolean = true,
+    val isManualReadReceiptsEnabled: Boolean,
+    val isShowManualReadBannerEnabled: Boolean,
+    val isShowManualReadBottomEnabled: Boolean,
+    val isShowManualReadInputBarEnabled: Boolean,
     val eventSink: (TimelineEvent) -> Unit,
 ) {
     private val lastTimelineEvent = timelineItems.firstOrNull { it is TimelineItem.Event } as? TimelineItem.Event
