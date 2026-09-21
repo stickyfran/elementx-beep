@@ -61,6 +61,10 @@ fun aTimelineState(
     displayJumpToUnread: Boolean = false,
     jumpToUnread: JumpToUnreadState = JumpToUnreadState.Hidden,
     newEventState: NewEventState = NewEventState.None,
+    isManualReadReceiptsEnabled: Boolean = false,
+    isShowManualReadBannerEnabled: Boolean = true,
+    isShowManualReadBottomEnabled: Boolean = true,
+    isShowManualReadInputBarEnabled: Boolean = true,
     eventSink: (TimelineEvent) -> Unit = {},
 ): TimelineState {
     val focusedEventId = timelineItems.filterIsInstance<TimelineItem.Event>().getOrNull(focusedEventIndex)?.eventId
@@ -81,6 +85,10 @@ fun aTimelineState(
         displayThreadSummaries = displayThreadSummaries,
         displayJumpToUnread = displayJumpToUnread,
         jumpToUnread = jumpToUnread,
+        isManualReadReceiptsEnabled = isManualReadReceiptsEnabled,
+        isShowManualReadBannerEnabled = isShowManualReadBannerEnabled,
+        isShowManualReadBottomEnabled = isShowManualReadBottomEnabled,
+        isShowManualReadInputBarEnabled = isShowManualReadInputBarEnabled,
         eventSink = eventSink,
     )
 }

@@ -44,6 +44,10 @@ fun aAdvancedSettingsState(
     liveLocationMinimumDistanceUpdate: Int? = 50,
     setTimelineMediaPreviewAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
     setHideInviteAvatarsAction: AsyncAction<Unit> = AsyncAction.Uninitialized,
+    isManualReadReceiptsEnabled: Boolean = false,
+    isShowManualReadBannerEnabled: Boolean = true,
+    isShowManualReadBottomEnabled: Boolean = true,
+    isShowManualReadInputBarEnabled: Boolean = true,
     eventSink: (AdvancedSettingsEvents) -> Unit = {},
 ) = AdvancedSettingsState(
     isDeveloperModeEnabled = isDeveloperModeEnabled,
@@ -58,5 +62,9 @@ fun aAdvancedSettingsState(
         setHideInviteAvatarsAction = setHideInviteAvatarsAction
     ),
     liveLocationMinimumDistanceUpdate = liveLocationMinimumDistanceUpdate,
+    isManualReadReceiptsEnabled = isManualReadReceiptsEnabled,
+    isShowManualReadBannerEnabled = isShowManualReadBannerEnabled,
+    isShowManualReadBottomEnabled = isShowManualReadBottomEnabled,
+    isShowManualReadInputBarEnabled = isShowManualReadInputBarEnabled,
     eventSink = eventSink
 )

@@ -27,12 +27,12 @@ sealed interface TimelineEvent {
 
     data object HideShieldDialog : TimelineEvent
 
-    data object MarkAllAsRead : TimelineEvent
-
     /**
      * Events coming from a timeline item.
      */
     sealed interface TimelineItemEvent : TimelineEvent
+
+    data object MarkAllAsRead : TimelineItemEvent
 
     data class ComputeVerifiedUserSendFailure(val event: TimelineItem.Event) : TimelineItemEvent
     data class ShowShieldDialog(val messageShieldData: MessageShieldData) : TimelineItemEvent

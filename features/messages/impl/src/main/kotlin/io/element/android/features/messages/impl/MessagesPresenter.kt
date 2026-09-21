@@ -88,6 +88,7 @@ import io.element.android.libraries.matrix.ui.model.dmUserStatus
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.room.getDirectRoomMember
 import io.element.android.libraries.textcomposer.model.MessageComposerMode
+import io.element.android.libraries.preferences.api.store.SessionPreferencesStore
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.collections.immutable.persistentListOf
@@ -130,6 +131,7 @@ class MessagesPresenter(
     private val addRecentEmoji: AddRecentEmoji,
     private val markAsFullyRead: MarkAsFullyRead,
     private val liveLocationShareManager: ActiveLiveLocationShareManager,
+    private val sessionPreferencesStore: SessionPreferencesStore,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
 ) : Presenter<MessagesState> {
     @AssistedFactory
@@ -192,11 +194,18 @@ class MessagesPresenter(
         var hasDismissedInviteDialog by rememberSaveable {
             mutableStateOf(false)
         }
+
+        val isManualReadEnabled by remember {
+            sessionPreferencesStore.isManualReadReceiptsEnabled()
+        }.collectAsState(initial = false)
+
         LaunchedEffect(Unit) {
             // Remove the unread flag on entering but don't send read receipts
             // as those will be handled by the timeline.
             withContext(dispatchers.io) {
-                room.setUnreadFlag(isUnread = false)
+                if (!isManualReadEnabled) {
+                    room.setUnreadFlag(isUnread = false)
+                }
 
                 // If for some reason the encryption state is unknown, fetch it
                 if (roomInfo.isEncrypted == null) {
@@ -279,13 +288,15 @@ class MessagesPresenter(
                 }
                 is MessagesEvent.MarkAsFullyReadAndExit -> if (!markingAsReadAndExiting.getAndSet(true)) {
                     coroutineScope.launch {
-                        val latestEventId = room.liveTimeline.getLatestEventId().getOrElse {
-                            Timber.w(it, "Failed to get latest event id to mark as fully read")
-                            null
-                        }
-                        latestEventId?.let { eventId ->
-                            sessionCoroutineScope.launch {
-                                markAsFullyRead(room.roomId, eventId)
+                        if (!isManualReadEnabled) {
+                            val latestEventId = room.liveTimeline.getLatestEventId().getOrElse {
+                                Timber.w(it, "Failed to get latest event id to mark as fully read")
+                                null
+                            }
+                            latestEventId?.let { eventId ->
+                                sessionCoroutineScope.launch {
+                                    markAsFullyRead(room.roomId, eventId)
+                                }
                             }
                         }
                         navigator.close()

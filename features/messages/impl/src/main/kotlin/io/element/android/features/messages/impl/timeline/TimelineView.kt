@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -76,6 +77,7 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.ResolveVerifiedUserSendFailureView
 import io.element.android.features.messages.impl.timeline.components.FloatingDateBadgeOverlay
+import io.element.android.features.messages.impl.timeline.components.ManualReadButton
 import io.element.android.features.messages.impl.timeline.components.TimelineItemRow
 import io.element.android.features.messages.impl.timeline.components.toText
 import io.element.android.features.messages.impl.timeline.di.LocalTimelineItemPresenterFactories
@@ -93,8 +95,11 @@ import io.element.android.libraries.designsystem.components.dialogs.AlertDialog
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.text.roundToPx
+import io.element.android.libraries.designsystem.theme.components.ButtonSize
 import io.element.android.libraries.designsystem.theme.components.Icon
+import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.utils.animateScrollToItemCenter
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.timeline.Timeline
@@ -195,6 +200,13 @@ fun TimelineView(
                 reverseLayout = true,
                 contentPadding = PaddingValues(top = 64.dp, bottom = 8.dp),
             ) {
+                if (state.isManualReadReceiptsEnabled && state.isShowManualReadBottomEnabled && state.jumpToUnread != JumpToUnreadState.Hidden) {
+                    item(key = "manual_read_bottom_item") {
+                        ManualReadBottomButton(
+                            onClick = ::onMarkAllAsRead,
+                        )
+                    }
+                }
                 items(
                     items = state.timelineItems,
                     contentType = { timelineItem -> timelineItem.contentType() },
@@ -246,6 +258,8 @@ fun TimelineView(
                 focusRequestState = state.focusRequestState,
                 displayJumpToUnread = state.displayJumpToUnread,
                 jumpToUnread = state.jumpToUnread,
+                isManualReadReceiptsEnabled = state.isManualReadReceiptsEnabled,
+                isShowManualReadInputBarEnabled = state.isShowManualReadInputBarEnabled,
                 onScrollFinishAt = ::onScrollFinishAt,
                 onJumpToLive = ::onJumpToLive,
                 onFocusEventRender = ::onFocusEventRender,
@@ -331,6 +345,8 @@ private fun BoxScope.TimelineScrollHelper(
     focusRequestState: FocusRequestState,
     displayJumpToUnread: Boolean,
     jumpToUnread: JumpToUnreadState,
+    isManualReadReceiptsEnabled: Boolean,
+    isShowManualReadInputBarEnabled: Boolean,
     onScrollFinishAt: (Int) -> Unit,
     onJumpToLive: () -> Unit,
     onFocusEventRender: () -> Unit,
@@ -433,8 +449,18 @@ private fun BoxScope.TimelineScrollHelper(
     Column(
         modifier = Modifier
             .align(Alignment.BottomEnd)
-            .padding(end = 24.dp, bottom = 16.dp)
+            .padding(end = 24.dp, bottom = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val isManualReadButtonVisible = isManualReadReceiptsEnabled &&
+            isShowManualReadInputBarEnabled &&
+            jumpToUnread != JumpToUnreadState.Hidden
+
+        ManualReadButton(
+            isVisible = isManualReadButtonVisible,
+            onClick = onMarkAllAsRead,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
         JumpToPositionButton(
             icon = CompoundIcons.ChevronUp(),
             contentDescription = stringResource(id = CommonStrings.a11y_jump_to_unread_messages),
@@ -691,3 +717,25 @@ private class CenterStartOfAnchorPositionProvider(
         )
     }
 }
+
+@Composable
+private fun ManualReadBottomButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextButton(
+            text = stringResource(id = CommonStrings.action_mark_as_read),
+            leadingIcon = IconSource.Vector(CompoundIcons.MarkAsRead()),
+            size = ButtonSize.Small,
+            onClick = onClick,
+        )
+    }
+}
+

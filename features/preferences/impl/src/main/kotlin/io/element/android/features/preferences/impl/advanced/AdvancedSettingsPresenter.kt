@@ -46,6 +46,18 @@ class AdvancedSettingsPresenter(
         val isSharePresenceEnabled by remember {
             sessionPreferencesStore.isSharePresenceEnabled()
         }.collectAsState(initial = true)
+        val isManualReadReceiptsEnabled by remember {
+            sessionPreferencesStore.isManualReadReceiptsEnabled()
+        }.collectAsState(initial = false)
+        val isShowManualReadBannerEnabled by remember {
+            sessionPreferencesStore.isShowManualReadBannerEnabled()
+        }.collectAsState(initial = true)
+        val isShowManualReadBottomEnabled by remember {
+            sessionPreferencesStore.isShowManualReadBottomEnabled()
+        }.collectAsState(initial = true)
+        val isShowManualReadInputBarEnabled by remember {
+            sessionPreferencesStore.isShowManualReadInputBarEnabled()
+        }.collectAsState(initial = true)
         val isBlackThemeAllowed by remember {
             featureFlagService.isFeatureEnabledFlow(FeatureFlags.AllowBlackTheme)
         }.collectAsState(initial = false)
@@ -130,6 +142,18 @@ class AdvancedSettingsPresenter(
                 is AdvancedSettingsEvents.SetVideoUploadQuality -> sessionCoroutineScope.launch {
                     sessionPreferencesStore.setVideoCompressionPreset(event.videoPreset)
                 }
+                is AdvancedSettingsEvents.SetManualReadReceiptsEnabled -> sessionCoroutineScope.launch {
+                    sessionPreferencesStore.setManualReadReceiptsEnabled(event.enabled)
+                }
+                is AdvancedSettingsEvents.SetShowManualReadBanner -> sessionCoroutineScope.launch {
+                    sessionPreferencesStore.setShowManualReadBanner(event.enabled)
+                }
+                is AdvancedSettingsEvents.SetShowManualReadBottom -> sessionCoroutineScope.launch {
+                    sessionPreferencesStore.setShowManualReadBottom(event.enabled)
+                }
+                is AdvancedSettingsEvents.SetShowManualReadInputBar -> sessionCoroutineScope.launch {
+                    sessionPreferencesStore.setShowManualReadInputBar(event.enabled)
+                }
             }
         }
 
@@ -141,6 +165,10 @@ class AdvancedSettingsPresenter(
             availableThemeOptions = availableThemeOptions,
             mediaPreviewConfigState = mediaPreviewConfigState,
             liveLocationMinimumDistanceUpdate = liveLocationMinimumDistanceUpdate,
+            isManualReadReceiptsEnabled = isManualReadReceiptsEnabled,
+            isShowManualReadBannerEnabled = isShowManualReadBannerEnabled,
+            isShowManualReadBottomEnabled = isShowManualReadBottomEnabled,
+            isShowManualReadInputBarEnabled = isShowManualReadInputBarEnabled,
             eventSink = ::handleEvent,
         )
     }

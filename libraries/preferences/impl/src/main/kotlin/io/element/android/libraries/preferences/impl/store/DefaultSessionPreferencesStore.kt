@@ -47,6 +47,10 @@ class DefaultSessionPreferencesStore(
     private val skipSessionVerification = booleanPreferencesKey("skipSessionVerification")
     private val compressImages = booleanPreferencesKey("compressMedia")
     private val compressMediaPreset = stringPreferencesKey("compressMediaPreset")
+    private val manualReadReceiptsKey = booleanPreferencesKey("manualReadReceipts")
+    private val showManualReadBannerKey = booleanPreferencesKey("manualReadShowBanner")
+    private val showManualReadBottomKey = booleanPreferencesKey("manualReadShowBottom")
+    private val showManualReadInputBarKey = booleanPreferencesKey("manualReadShowInputBar")
 
     private val dataStoreFile = storeFile(context, sessionId)
     private val store = PreferenceDataStoreFactory.create(
@@ -93,6 +97,18 @@ class DefaultSessionPreferencesStore(
     override suspend fun setVideoCompressionPreset(preset: VideoCompressionPreset) = update(compressMediaPreset, preset.name)
     override fun getVideoCompressionPreset(): Flow<VideoCompressionPreset> = get(compressMediaPreset) { VideoCompressionPreset.STANDARD.name }
         .map { tryOrNull { VideoCompressionPreset.valueOf(it) } ?: VideoCompressionPreset.STANDARD }
+
+    override suspend fun setManualReadReceiptsEnabled(enabled: Boolean) = update(manualReadReceiptsKey, enabled)
+    override fun isManualReadReceiptsEnabled(): Flow<Boolean> = get(manualReadReceiptsKey) { false }
+
+    override suspend fun setShowManualReadBanner(enabled: Boolean) = update(showManualReadBannerKey, enabled)
+    override fun isShowManualReadBannerEnabled(): Flow<Boolean> = get(showManualReadBannerKey) { true }
+
+    override suspend fun setShowManualReadBottom(enabled: Boolean) = update(showManualReadBottomKey, enabled)
+    override fun isShowManualReadBottomEnabled(): Flow<Boolean> = get(showManualReadBottomKey) { true }
+
+    override suspend fun setShowManualReadInputBar(enabled: Boolean) = update(showManualReadInputBarKey, enabled)
+    override fun isShowManualReadInputBarEnabled(): Flow<Boolean> = get(showManualReadInputBarKey) { true }
 
     override suspend fun clear() {
         dataStoreFile.safeDelete()

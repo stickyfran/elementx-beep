@@ -8,7 +8,15 @@
 
 package io.element.android.features.home.impl.components
 
+import android.view.HapticFeedbackConstants
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
@@ -26,11 +34,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -132,7 +145,7 @@ internal fun RoomSummaryRow(
                         isHighlighted = room.isHighlighted,
                         dmUserStatus = room.dmUserStatus,
                     )
-                    MessagePreviewAndIndicatorRow(room = room, showUnreadCount = showUnreadCount)
+                    MessagePreviewAndIndicatorRow(room = room, showUnreadCount = showUnreadCount, eventSink = eventSink)
                 }
             }
             RoomSummaryDisplayType.KNOCKED -> {
@@ -288,6 +301,7 @@ private fun InviteSubtitle(
 private fun MessagePreviewAndIndicatorRow(
     room: RoomListRoomSummary,
     showUnreadCount: Boolean,
+    eventSink: (RoomListEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -384,11 +398,42 @@ private fun MessagePreviewAndIndicatorRow(
                 } else {
                     null
                 }
-                UnreadIndicatorAtom(
-                    color = tint,
-                    count = count,
-                    contentDescription = contentDescription,
-                )
+                val view = LocalView.current
+                var isMarkingRead by remember(room.roomId, room.hasNewContent) { mutableStateOf(false) }
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable {
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                            isMarkingRead = true
+                            eventSink(RoomListEvent.MarkAsReadFromBadge(room.roomId))
+                        }
+                        .padding(4.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AnimatedContent(
+                        targetState = isMarkingRead,
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(150)) togetherWith fadeOut(animationSpec = tween(150))
+                        },
+                        label = "BadgeMarkAsReadAnimation",
+                    ) { marking ->
+                        if (marking) {
+                            Icon(
+                                modifier = Modifier.size(14.dp),
+                                imageVector = CompoundIcons.CheckCircle(),
+                                contentDescription = null,
+                                tint = tint,
+                            )
+                        } else {
+                            UnreadIndicatorAtom(
+                                color = tint,
+                                count = count,
+                                contentDescription = contentDescription,
+                            )
+                        }
+                    }
+                }
             }
         }
     }

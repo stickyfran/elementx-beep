@@ -141,6 +141,9 @@ class RoomListPresenter(
                 is RoomListEvent.SetRoomIsFavorite -> coroutineScope.setRoomIsFavorite(event.roomId, event.isFavorite)
                 is RoomListEvent.MarkAsRead -> coroutineScope.markAsRead(event.roomId)
                 is RoomListEvent.MarkAsUnread -> coroutineScope.markAsUnread(event.roomId)
+                is RoomListEvent.MarkAsReadFromBadge -> coroutineScope.launch {
+                    markRoomAsRead(event.roomId)
+                }
                 is RoomListEvent.AcceptInvite -> {
                     acceptDeclineInviteState.eventSink(
                         AcceptInvite(event.roomSummary.toInviteData())

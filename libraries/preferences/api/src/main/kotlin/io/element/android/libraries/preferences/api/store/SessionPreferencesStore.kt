@@ -35,5 +35,18 @@ interface SessionPreferencesStore {
     suspend fun setVideoCompressionPreset(preset: VideoCompressionPreset)
     fun getVideoCompressionPreset(): Flow<VideoCompressionPreset>
 
+    // Manual read receipts
+    suspend fun setManualReadReceiptsEnabled(enabled: Boolean)
+    fun isManualReadReceiptsEnabled(): Flow<Boolean>
+
+    suspend fun setShowManualReadBanner(enabled: Boolean)
+    fun isShowManualReadBannerEnabled(): Flow<Boolean>
+
+    suspend fun setShowManualReadBottom(enabled: Boolean)
+    fun isShowManualReadBottomEnabled(): Flow<Boolean>
+
+    suspend fun setShowManualReadInputBar(enabled: Boolean)
+    fun isShowManualReadInputBarEnabled(): Flow<Boolean>
+
     suspend fun clear()
 }

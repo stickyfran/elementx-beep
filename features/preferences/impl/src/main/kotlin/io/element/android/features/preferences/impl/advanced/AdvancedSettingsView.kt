@@ -202,6 +202,7 @@ fun AdvancedSettingsView(
             }
         }
 
+        ManualReadReceiptsSection(state)
         ModerationAndSafety(state)
         if (state.liveLocationMinimumDistanceUpdate != null) {
             LiveLocationUpdatesSection(
@@ -333,6 +334,53 @@ private fun ModerationAndSafety(
             },
             enabled = !state.mediaPreviewConfigState.setTimelineMediaPreviewAction.isLoading()
         )
+    }
+}
+
+@Composable
+private fun ManualReadReceiptsSection(
+    state: AdvancedSettingsState,
+    modifier: Modifier = Modifier,
+) {
+    PreferenceCategory(
+        modifier = modifier,
+        title = "Recibos de lectura manual",
+        showTopDivider = true,
+    ) {
+        ListItem(
+            headlineContent = { Text(text = "Activar lectura manual") },
+            supportingContent = { Text(text = "No marcar automáticamente como leído al abrir o salir de una sala.") },
+            trailingContent = ListItemContent.Switch(
+                checked = state.isManualReadReceiptsEnabled,
+            ),
+            onClick = { state.eventSink(AdvancedSettingsEvents.SetManualReadReceiptsEnabled(!state.isManualReadReceiptsEnabled)) },
+        )
+        if (state.isManualReadReceiptsEnabled) {
+            ListItem(
+                headlineContent = { Text(text = "Mostrar botón en 'Nuevos mensajes'") },
+                supportingContent = { Text(text = "Muestra un botón 'Marcar como leído' en el separador de mensajes.") },
+                trailingContent = ListItemContent.Switch(
+                    checked = state.isShowManualReadBannerEnabled,
+                ),
+                onClick = { state.eventSink(AdvancedSettingsEvents.SetShowManualReadBanner(!state.isShowManualReadBannerEnabled)) },
+            )
+            ListItem(
+                headlineContent = { Text(text = "Mostrar botón al fondo del chat") },
+                supportingContent = { Text(text = "Muestra un botón 'Marcar como leído' debajo de todos los mensajes.") },
+                trailingContent = ListItemContent.Switch(
+                    checked = state.isShowManualReadBottomEnabled,
+                ),
+                onClick = { state.eventSink(AdvancedSettingsEvents.SetShowManualReadBottom(!state.isShowManualReadBottomEnabled)) },
+            )
+            ListItem(
+                headlineContent = { Text(text = "Mostrar botón en la barra de texto") },
+                supportingContent = { Text(text = "Muestra un botón flotante sobre el campo de texto del chat.") },
+                trailingContent = ListItemContent.Switch(
+                    checked = state.isShowManualReadInputBarEnabled,
+                ),
+                onClick = { state.eventSink(AdvancedSettingsEvents.SetShowManualReadInputBar(!state.isShowManualReadInputBarEnabled)) },
+            )
+        }
     }
 }
 

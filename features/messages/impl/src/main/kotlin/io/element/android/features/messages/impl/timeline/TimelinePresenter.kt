@@ -161,6 +161,19 @@ class TimelinePresenter(
             value = featureFlagService.isFeatureEnabled(FeatureFlags.JumpToUnread)
         }
 
+        val isManualReadReceiptsEnabled by remember {
+            sessionPreferencesStore.isManualReadReceiptsEnabled()
+        }.collectAsState(initial = false)
+        val isShowManualReadBannerEnabled by remember {
+            sessionPreferencesStore.isShowManualReadBannerEnabled()
+        }.collectAsState(initial = true)
+        val isShowManualReadBottomEnabled by remember {
+            sessionPreferencesStore.isShowManualReadBottomEnabled()
+        }.collectAsState(initial = true)
+        val isShowManualReadInputBarEnabled by remember {
+            sessionPreferencesStore.isShowManualReadInputBarEnabled()
+        }.collectAsState(initial = true)
+
         val timelineProtectionState = timelineProtectionPresenter.present()
 
         fun handleEvent(event: TimelineEvent) {
@@ -181,13 +194,16 @@ class TimelinePresenter(
                         }
                         Timber.tag(tag).d("## sendReadReceiptIfNeeded firstVisibleIndex: ${event.firstIndex}")
                         sessionCoroutineScope.launch {
-                            val sendPublicReadReceipts = sessionPreferencesStore.isSendPublicReadReceiptsEnabled().first()
-                            sendReadReceiptIfNeeded(
-                                firstVisibleIndex = event.firstIndex,
-                                timelineItems = timelineItems,
-                                lastReadReceiptId = lastReadReceiptId,
-                                readReceiptType = if (sendPublicReadReceipts) ReceiptType.READ else ReceiptType.READ_PRIVATE,
-                            )
+                            val isManualRead = sessionPreferencesStore.isManualReadReceiptsEnabled().first()
+                            if (!isManualRead) {
+                                val sendPublicReadReceipts = sessionPreferencesStore.isSendPublicReadReceiptsEnabled().first()
+                                sendReadReceiptIfNeeded(
+                                    firstVisibleIndex = event.firstIndex,
+                                    timelineItems = timelineItems,
+                                    lastReadReceiptId = lastReadReceiptId,
+                                    readReceiptType = if (sendPublicReadReceipts) ReceiptType.READ else ReceiptType.READ_PRIVATE,
+                                )
+                            }
                         }
                     } else {
                         newEventState.value = NewEventState.None
@@ -411,6 +427,10 @@ class TimelinePresenter(
             displayThreadSummaries = displayThreadSummaries,
             displayJumpToUnread = displayJumpToUnread,
             jumpToUnread = jumpToUnread.value,
+            isManualReadReceiptsEnabled = isManualReadReceiptsEnabled,
+            isShowManualReadBannerEnabled = isShowManualReadBannerEnabled,
+            isShowManualReadBottomEnabled = isShowManualReadBottomEnabled,
+            isShowManualReadInputBarEnabled = isShowManualReadInputBarEnabled,
             eventSink = ::handleEvent,
         )
     }

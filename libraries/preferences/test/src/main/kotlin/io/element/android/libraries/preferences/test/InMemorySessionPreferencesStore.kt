@@ -22,6 +22,10 @@ class InMemorySessionPreferencesStore(
     isSessionVerificationSkipped: Boolean = false,
     doesCompressMedia: Boolean = true,
     videoCompressionPreset: VideoCompressionPreset = VideoCompressionPreset.STANDARD,
+    isManualReadReceiptsEnabled: Boolean = false,
+    isShowManualReadBannerEnabled: Boolean = true,
+    isShowManualReadBottomEnabled: Boolean = true,
+    isShowManualReadInputBarEnabled: Boolean = true,
 ) : SessionPreferencesStore {
     private val isSharePresenceEnabled = MutableStateFlow(isSharePresenceEnabled)
     private val isSendPublicReadReceiptsEnabled = MutableStateFlow(isSendPublicReadReceiptsEnabled)
@@ -31,6 +35,10 @@ class InMemorySessionPreferencesStore(
     private val isSessionVerificationSkipped = MutableStateFlow(isSessionVerificationSkipped)
     private val doesCompressMedia = MutableStateFlow(doesCompressMedia)
     private val videoCompressionPreset = MutableStateFlow(videoCompressionPreset)
+    private val isManualReadReceiptsEnabled = MutableStateFlow(isManualReadReceiptsEnabled)
+    private val isShowManualReadBannerEnabled = MutableStateFlow(isShowManualReadBannerEnabled)
+    private val isShowManualReadBottomEnabled = MutableStateFlow(isShowManualReadBottomEnabled)
+    private val isShowManualReadInputBarEnabled = MutableStateFlow(isShowManualReadInputBarEnabled)
     var clearCallCount = 0
         private set
 
@@ -83,6 +91,30 @@ class InMemorySessionPreferencesStore(
     override fun getVideoCompressionPreset(): Flow<VideoCompressionPreset> {
         return videoCompressionPreset
     }
+
+    override suspend fun setManualReadReceiptsEnabled(enabled: Boolean) {
+        isManualReadReceiptsEnabled.tryEmit(enabled)
+    }
+
+    override fun isManualReadReceiptsEnabled(): Flow<Boolean> = isManualReadReceiptsEnabled
+
+    override suspend fun setShowManualReadBanner(enabled: Boolean) {
+        isShowManualReadBannerEnabled.tryEmit(enabled)
+    }
+
+    override fun isShowManualReadBannerEnabled(): Flow<Boolean> = isShowManualReadBannerEnabled
+
+    override suspend fun setShowManualReadBottom(enabled: Boolean) {
+        isShowManualReadBottomEnabled.tryEmit(enabled)
+    }
+
+    override fun isShowManualReadBottomEnabled(): Flow<Boolean> = isShowManualReadBottomEnabled
+
+    override suspend fun setShowManualReadInputBar(enabled: Boolean) {
+        isShowManualReadInputBarEnabled.tryEmit(enabled)
+    }
+
+    override fun isShowManualReadInputBarEnabled(): Flow<Boolean> = isShowManualReadInputBarEnabled
 
     override suspend fun clear() {
         clearCallCount++

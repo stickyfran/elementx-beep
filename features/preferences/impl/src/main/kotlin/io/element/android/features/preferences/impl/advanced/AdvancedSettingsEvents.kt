@@ -21,4 +21,8 @@ sealed interface AdvancedSettingsEvents {
     data class SetTimelineMediaPreviewValue(val value: MediaPreviewValue) : AdvancedSettingsEvents
     data class SetHideInviteAvatars(val value: Boolean) : AdvancedSettingsEvents
     data class SetLiveLocationMinimumDistanceUpdate(val value: Int) : AdvancedSettingsEvents
+    data class SetManualReadReceiptsEnabled(val enabled: Boolean) : AdvancedSettingsEvents
+    data class SetShowManualReadBanner(val enabled: Boolean) : AdvancedSettingsEvents
+    data class SetShowManualReadBottom(val enabled: Boolean) : AdvancedSettingsEvents
+    data class SetShowManualReadInputBar(val enabled: Boolean) : AdvancedSettingsEvents
 }

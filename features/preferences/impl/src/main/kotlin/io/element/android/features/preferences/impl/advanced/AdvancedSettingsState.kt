@@ -24,6 +24,10 @@ data class AdvancedSettingsState(
     val availableThemeOptions: ImmutableList<ThemeOption>,
     val mediaPreviewConfigState: MediaPreviewConfigState,
     val liveLocationMinimumDistanceUpdate: Int?,
+    val isManualReadReceiptsEnabled: Boolean,
+    val isShowManualReadBannerEnabled: Boolean,
+    val isShowManualReadBottomEnabled: Boolean,
+    val isShowManualReadInputBarEnabled: Boolean,
     val eventSink: (AdvancedSettingsEvents) -> Unit
 )
 
