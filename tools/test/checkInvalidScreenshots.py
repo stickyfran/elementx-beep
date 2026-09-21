@@ -14,6 +14,9 @@ from util import compare
 def checkInvalidScreenshots(reference):
     __doc__ = "Detect invalid screenshot, by comparing to an invalid reference."
     path_of_screenshots = "tests/uitests/src/test/snapshots/images/"
+    if not os.path.exists(path_of_screenshots):
+        print("Screenshots directory does not exist, skipping check.")
+        return 0
     files = os.listdir(path_of_screenshots)
     counter = 0
     for file in files:

@@ -739,4 +739,3 @@ private fun ManualReadBottomButton(
         )
     }
 }
-
