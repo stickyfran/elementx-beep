@@ -19,10 +19,15 @@ dependencies {
     implementation(projects.libraries.compound)
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.preferences.api)
+    implementation(projects.libraries.network)
+    implementation(projects.libraries.sessionStorage.api)
+    implementation(libs.network.okhttp)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.serialization.json)
     implementation(libs.coroutines.core)
 
     testCommonDependencies(libs, true)
     testImplementation(projects.libraries.matrix.test)
+    testImplementation(projects.libraries.sessionStorage.test)
+    testImplementation(projects.libraries.preferences.test)
 }
