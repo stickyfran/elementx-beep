@@ -12,5 +12,6 @@ import io.element.android.libraries.matrix.api.core.SessionId
 
 sealed interface HomeEvent {
     data class SelectHomeNavigationBarItem(val item: HomeNavigationBarItem) : HomeEvent
+    data class SelectVirtualSpace(val spaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId) : HomeEvent
     data class SwitchToAccount(val sessionId: SessionId) : HomeEvent
 }

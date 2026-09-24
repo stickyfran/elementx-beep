@@ -82,10 +82,13 @@ import kotlinx.collections.immutable.toImmutableList
 @Composable
 fun HomeTopBar(
     selectedNavigationItem: HomeNavigationBarItem,
+    selectedVirtualSpaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId = io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats,
+    beeperLabels: ImmutableList<io.element.android.features.beeperbridge.api.BeeperLabel> = persistentListOf(),
     currentUserAndNeighbors: ImmutableList<MatrixUser>,
     showAvatarIndicator: Boolean,
     areSearchResultsDisplayed: Boolean,
     onToggleSearch: () -> Unit,
+    onStartChatClick: () -> Unit = {},
     onMenuActionClick: (RoomListMenuAction) -> Unit,
     onOpenSettings: () -> Unit,
     onAccountSwitch: (SessionId) -> Unit,
@@ -110,8 +113,16 @@ fun HomeTopBar(
             title = {
                 val displayTitle = when (selectedNavigationItem) {
                     HomeNavigationBarItem.Chats -> {
-                        when (spaceFiltersState) {
-                            is SpaceFiltersState.Selected -> spaceFiltersState.selectedFilter.spaceRoom.displayName
+                        when {
+                            spaceFiltersState is SpaceFiltersState.Selected -> spaceFiltersState.selectedFilter.spaceRoom.displayName
+                            selectedVirtualSpaceId is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.LabelSpace -> {
+                                val label = beeperLabels.find { it.id == selectedVirtualSpaceId.labelId }
+                                if (label != null) {
+                                    if (label.emoji != null) "${label.emoji} ${label.title}" else label.title
+                                } else {
+                                    stringResource(selectedNavigationItem.labelRes)
+                                }
+                            }
                             else -> stringResource(selectedNavigationItem.labelRes)
                         }
                     }
@@ -136,6 +147,7 @@ fun HomeTopBar(
             actions = {
                 if (selectedNavigationItem == HomeNavigationBarItem.Chats) {
                     RoomListMenuItems(
+                        onStartChatClick = onStartChatClick,
                         onToggleSearch = onToggleSearch,
                         onMenuActionClick = onMenuActionClick,
                         canReportBug = canReportBug,
@@ -162,17 +174,18 @@ fun HomeTopBar(
 
 @Composable
 private fun RowScope.RoomListMenuItems(
+    onStartChatClick: () -> Unit,
     onToggleSearch: () -> Unit,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
     canReportBug: Boolean,
     spaceFiltersState: SpaceFiltersState,
 ) {
     IconButton(
-        onClick = onToggleSearch,
+        onClick = onStartChatClick,
     ) {
         Icon(
-            imageVector = CompoundIcons.Search(),
-            contentDescription = stringResource(CommonStrings.action_search),
+            imageVector = CompoundIcons.Plus(),
+            contentDescription = stringResource(CommonStrings.action_create_room),
         )
     }
     SpaceFilterButton(spaceFiltersState = spaceFiltersState)

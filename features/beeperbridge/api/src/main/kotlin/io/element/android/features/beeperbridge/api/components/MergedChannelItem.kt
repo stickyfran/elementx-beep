@@ -10,11 +10,13 @@ package io.element.android.features.beeperbridge.api.components
 
 import androidx.compose.runtime.Immutable
 import io.element.android.features.beeperbridge.api.BeeperNetwork
+import io.element.android.libraries.designsystem.components.avatar.AvatarData
 
 @Immutable
 data class MergedChannelItem(
     val roomId: String,
     val network: BeeperNetwork,
     val displayName: String? = null,
+    val avatarData: AvatarData? = null,
     val unreadCount: Long = 0,
 )

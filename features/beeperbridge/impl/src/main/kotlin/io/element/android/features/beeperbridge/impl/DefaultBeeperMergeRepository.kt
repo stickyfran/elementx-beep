@@ -105,7 +105,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
         return runCatchingExceptions {
             val updated = _mergedContactsFlow.value.toMutableMap()
             if (updated.remove(mergeId) != null) {
-                persistAndSync(updated)
+                persistAndSync(updated, deletedMergeId = mergeId)
             }
         }
     }
@@ -127,12 +127,14 @@ class DefaultBeeperMergeRepository @Inject constructor(
             val contact = _mergedContactsFlow.value[mergeId] ?: return@runCatchingExceptions
             val updatedRoomIds = contact.roomIds.filter { it != roomId }
             val updated = _mergedContactsFlow.value.toMutableMap()
-            if (updatedRoomIds.isEmpty()) {
+            val deletedId = if (updatedRoomIds.isEmpty()) {
                 updated.remove(mergeId)
+                mergeId
             } else {
                 updated[mergeId] = contact.copy(roomIds = updatedRoomIds)
+                null
             }
-            persistAndSync(updated)
+            persistAndSync(updated, deletedMergeId = deletedId)
         }
     }
 
@@ -162,9 +164,28 @@ class DefaultBeeperMergeRepository @Inject constructor(
         }
     }
 
-    private suspend fun persistAndSync(contacts: Map<String, MergedContact>) {
-        updateState(contacts)
-        val jsonStr = serializeContacts(contacts)
+    private suspend fun persistAndSync(contacts: Map<String, MergedContact>, deletedMergeId: String? = null) {
+        var remoteContacts = matrixAccountDataService.getAccountData(ACCOUNT_DATA_KEY).getOrNull()
+            ?.let { parseContacts(it) }
+            .orEmpty()
+        if (remoteContacts.isEmpty()) {
+            val fallbackJson = matrixAccountDataService.getAccountData(FALLBACK_ACCOUNT_DATA_KEY).getOrNull()
+            if (fallbackJson != null) {
+                val fallbackContacts = parseContacts(fallbackJson)
+                if (fallbackContacts.isNotEmpty()) {
+                    remoteContacts = fallbackContacts
+                }
+            }
+        }
+
+        val merged = remoteContacts.toMutableMap()
+        if (deletedMergeId != null) {
+            merged.remove(deletedMergeId)
+        }
+        merged.putAll(contacts)
+
+        updateState(merged)
+        val jsonStr = serializeContacts(merged)
         dataStore.edit { prefs ->
             prefs[contactsKey] = jsonStr
         }

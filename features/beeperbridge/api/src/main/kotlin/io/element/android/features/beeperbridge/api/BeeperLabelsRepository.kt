@@ -16,4 +16,5 @@ interface BeeperLabelsRepository {
     suspend fun deleteLabel(labelId: String)
     suspend fun getHiddenNetworks(): Set<String>
     suspend fun setHiddenNetworks(networks: Set<String>)
+    suspend fun syncFromRemote(): Result<Unit>
 }

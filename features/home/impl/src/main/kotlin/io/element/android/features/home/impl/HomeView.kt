@@ -19,12 +19,23 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -184,6 +195,8 @@ private fun HomeScaffold(
             val spaceFiltersState = state.roomListState.spaceFiltersState
             if (spaceFiltersState is SpaceFiltersState.Selected) {
                 spaceFiltersState.eventSink(SpaceFiltersEvent.Selected.ClearSelection)
+            } else if (state.selectedVirtualSpaceId != io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats) {
+                state.eventSink(HomeEvent.SelectVirtualSpace(io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats))
             }
         }
     }
@@ -197,10 +210,13 @@ private fun HomeScaffold(
         topBar = {
             HomeTopBar(
                 selectedNavigationItem = state.currentHomeNavigationBarItem,
+                selectedVirtualSpaceId = state.selectedVirtualSpaceId,
+                beeperLabels = state.beeperLabels,
                 currentUserAndNeighbors = state.currentUserAndNeighbors,
                 showAvatarIndicator = state.showAvatarIndicator,
                 areSearchResultsDisplayed = roomListState.searchState.isSearchActive,
                 onToggleSearch = { roomListState.eventSink(RoomListEvent.ToggleSearchResults) },
+                onStartChatClick = onStartChatClick,
                 onMenuActionClick = onMenuActionClick,
                 onOpenSettings = onOpenSettings,
                 onAccountSwitch = {
@@ -221,6 +237,8 @@ private fun HomeScaffold(
             val coroutineScope = rememberCoroutineScope()
             HomeBottomBar(
                 currentHomeNavigationBarItem = state.currentHomeNavigationBarItem,
+                selectedVirtualSpaceId = state.selectedVirtualSpaceId,
+                beeperLabels = state.beeperLabels,
                 onItemClick = { item ->
                     // scroll to top if selecting the same item
                     if (item == state.currentHomeNavigationBarItem) {
@@ -240,13 +258,24 @@ private fun HomeScaffold(
                         state.eventSink(HomeEvent.SelectHomeNavigationBarItem(item))
                     }
                 },
+                onSelectVirtualSpace = { spaceId ->
+                    state.eventSink(HomeEvent.SelectVirtualSpace(spaceId))
+                },
                 floatingActionButton = {
                     when (state.currentHomeNavigationBarItem) {
                         HomeNavigationBarItem.Chats -> {
-                            HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
+                            HomeFloatingActionButton(
+                                onClick = { roomListState.eventSink(RoomListEvent.ToggleSearchResults) },
+                                contentDescription = CommonStrings.action_search,
+                                icon = CompoundIcons.Search(),
+                            )
                         }
                         HomeNavigationBarItem.Spaces -> {
-                            HomeFloatingActionButton(onCreateSpaceClick, CommonStrings.action_create_space)
+                            HomeFloatingActionButton(
+                                onClick = onCreateSpaceClick,
+                                contentDescription = CommonStrings.action_create_space,
+                                icon = CompoundIcons.Plus(),
+                            )
                         }
                     }
                 },
@@ -315,21 +344,25 @@ private fun HomeScaffold(
 private fun HomeFloatingActionButton(
     onClick: () -> Unit,
     contentDescription: Int,
+    icon: androidx.compose.ui.graphics.vector.ImageVector = CompoundIcons.Search(),
     modifier: Modifier = Modifier,
 ) {
     FloatingActionButton(onClick = onClick, modifier = modifier) {
         Icon(
-            imageVector = CompoundIcons.Plus(),
+            imageVector = icon,
             contentDescription = stringResource(id = contentDescription),
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeBottomBar(
     currentHomeNavigationBarItem: HomeNavigationBarItem,
+    selectedVirtualSpaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId,
+    beeperLabels: kotlinx.collections.immutable.ImmutableList<io.element.android.features.beeperbridge.api.BeeperLabel>,
     onItemClick: (HomeNavigationBarItem) -> Unit,
+    onSelectVirtualSpace: (io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId) -> Unit,
     modifier: Modifier = Modifier,
     floatingActionButton: (@Composable () -> Unit)?,
 ) {
@@ -338,17 +371,75 @@ private fun HomeBottomBar(
         modifier = modifier
             .zIndex(1f),
     ) {
-        HomeNavigationBarItem.entries.forEachIndexed { index, item ->
-            if (index > 0) {
-                HorizontalFloatingToolbarSeparator()
+        val isChatsSelected = currentHomeNavigationBarItem == HomeNavigationBarItem.Chats &&
+            selectedVirtualSpaceId == io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats
+        HorizontalFloatingToolbarItem(
+            icon = HomeNavigationBarItem.Chats.icon(isChatsSelected),
+            tooltipLabel = stringResource(HomeNavigationBarItem.Chats.labelRes),
+            isSelected = isChatsSelected,
+            onClick = {
+                onSelectVirtualSpace(io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats)
+                onItemClick(HomeNavigationBarItem.Chats)
+            },
+        )
+
+        HorizontalFloatingToolbarSeparator()
+        val isSpacesSelected = currentHomeNavigationBarItem == HomeNavigationBarItem.Spaces
+        HorizontalFloatingToolbarItem(
+            icon = HomeNavigationBarItem.Spaces.icon(isSpacesSelected),
+            tooltipLabel = stringResource(HomeNavigationBarItem.Spaces.labelRes),
+            isSelected = isSpacesSelected,
+            onClick = { onItemClick(HomeNavigationBarItem.Spaces) },
+        )
+
+        beeperLabels.forEach { label ->
+            HorizontalFloatingToolbarSeparator()
+            val isLabelSelected = currentHomeNavigationBarItem == HomeNavigationBarItem.Chats &&
+                selectedVirtualSpaceId == io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.LabelSpace(label.id)
+
+            val emoji = label.emoji
+            if (emoji != null) {
+                TooltipBox(
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                    tooltip = { PlainTooltip { Text(label.title) } },
+                    state = rememberTooltipState(),
+                ) {
+                    val colors = if (isLabelSelected) {
+                        IconButtonDefaults.filledIconButtonColors().copy(
+                            containerColor = ElementTheme.colors.bgCanvasDefault,
+                            contentColor = ElementTheme.colors.iconPrimary,
+                        )
+                    } else {
+                        IconButtonDefaults.filledIconButtonColors().copy(
+                            containerColor = Color.Transparent,
+                            contentColor = ElementTheme.colors.iconSecondary,
+                        )
+                    }
+                    FilledIconButton(
+                        modifier = Modifier.widthIn(min = 56.dp),
+                        colors = colors,
+                        onClick = {
+                            onSelectVirtualSpace(io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.LabelSpace(label.id))
+                            onItemClick(HomeNavigationBarItem.Chats)
+                        },
+                    ) {
+                        Text(
+                            text = emoji,
+                            fontSize = 18.sp,
+                        )
+                    }
+                }
+            } else {
+                HorizontalFloatingToolbarItem(
+                    icon = CompoundIcons.Favourite(),
+                    tooltipLabel = label.title,
+                    isSelected = isLabelSelected,
+                    onClick = {
+                        onSelectVirtualSpace(io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.LabelSpace(label.id))
+                        onItemClick(HomeNavigationBarItem.Chats)
+                    },
+                )
             }
-            val isSelected = currentHomeNavigationBarItem == item
-            HorizontalFloatingToolbarItem(
-                icon = item.icon(isSelected),
-                tooltipLabel = stringResource(item.labelRes),
-                isSelected = isSelected,
-                onClick = { onItemClick(item) },
-            )
         }
     }
 }

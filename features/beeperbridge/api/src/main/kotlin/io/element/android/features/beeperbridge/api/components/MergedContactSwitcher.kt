@@ -36,6 +36,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.element.android.libraries.designsystem.components.avatar.Avatar
+import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import kotlinx.collections.immutable.ImmutableList
 
 private const val ALPHA_SELECTED = 0.15f
@@ -82,54 +84,90 @@ fun MergedContactSwitcher(
 
                 Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .border(1.dp, pillBorder, RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(20.dp))
+                        .border(
+                            width = if (isSelected) 1.5.dp else 1.dp,
+                            color = pillBorder,
+                            shape = RoundedCornerShape(20.dp)
+                        )
                         .background(pillBackground)
                         .clickable { onSelectChannel(channel.roomId) }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clip(CircleShape)
-                            .background(Color(colorHex)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(network.iconResId),
-                            contentDescription = network.displayName,
-                            tint = Color.White,
-                            modifier = Modifier.padding(2.dp)
-                        )
+                    Box(modifier = Modifier.size(34.dp)) {
+                        if (channel.avatarData != null) {
+                            Avatar(
+                                avatarData = channel.avatarData,
+                                avatarType = AvatarType.Room(),
+                                forcedAvatarSize = 30.dp,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(colorHex))
+                                    .align(Alignment.Center),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(network.iconResId),
+                                    contentDescription = network.displayName,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        // Network badge overlay on bottom right of the avatar
+                        Box(
+                            modifier = Modifier
+                                .size(14.dp)
+                                .align(Alignment.BottomEnd)
+                                .clip(CircleShape)
+                                .background(Color(colorHex))
+                                .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(network.iconResId),
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(8.dp)
+                            )
+                        }
+
+                        // Unread count badge on top right
+                        if (channel.unreadCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .align(Alignment.TopEnd)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.error)
+                                    .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (channel.unreadCount > 99) "99+" else channel.unreadCount.toString(),
+                                    fontSize = 8.sp,
+                                    color = MaterialTheme.colorScheme.onError,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
-                        text = network.displayName,
+                        text = channel.displayName ?: network.displayName,
                         fontSize = 12.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                         color = if (isSelected) Color(colorHex) else MaterialTheme.colorScheme.onSurface
                     )
-
-                    if (channel.unreadCount > 0) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(14.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = channel.unreadCount.toString(),
-                                fontSize = 9.sp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
                 }
             }
         }

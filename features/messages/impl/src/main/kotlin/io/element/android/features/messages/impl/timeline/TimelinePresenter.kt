@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -27,6 +28,8 @@ import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperMergeRepository
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.components.MergedChannelItem
+import io.element.android.libraries.designsystem.components.avatar.AvatarData
+import io.element.android.libraries.designsystem.components.avatar.AvatarSize
 import io.element.android.features.location.api.live.ActiveLiveLocationShareManager
 import io.element.android.features.messages.impl.MessagesNavigator
 import io.element.android.features.messages.impl.UserEventPermissions
@@ -152,25 +155,41 @@ class TimelinePresenter(
                 persistentListOf<MergedChannelItem>()
             } else {
                 contact.roomIds.map { siblingId ->
-                    val network = beeperBridgeService.getNetworkForRoom(siblingId)
+                    val roomData = beeperBridgeService.getRoomData(siblingId)
+                    val network = roomData?.network
+                        ?: beeperBridgeService.getNetworkForRoom(siblingId)
                         ?: BeeperNetwork.UNKNOWN
+                    val name = roomData?.overrideDisplayName
+                        ?: if (network != BeeperNetwork.UNKNOWN) network.displayName else "Chat"
+                    val avatarUrl = roomData?.overrideAvatarUrl ?: contact.avatarMxc
+                    val avatarData = AvatarData(
+                        id = siblingId,
+                        name = name,
+                        url = avatarUrl,
+                        size = AvatarSize.TimelineRoom,
+                    )
                     MergedChannelItem(
                         roomId = siblingId,
                         network = network,
-                        displayName = if (network != BeeperNetwork.UNKNOWN) network.displayName else "Chat",
+                        displayName = name,
+                        avatarData = avatarData,
                         unreadCount = 0,
                     )
                 }.toImmutableList()
             }
         }
 
+        val checkedSiblings = remember(room.roomId) { mutableSetOf<String>() }
         LaunchedEffect(mergedContacts, room.roomId) {
             val contact = mergedContacts.values.find { it.roomIds.contains(room.roomId.value) }
             if (contact != null) {
                 contact.roomIds.forEach { siblingId ->
-                    val currentNet = beeperBridgeService.getNetworkForRoom(siblingId)
-                    if (currentNet == null || currentNet == BeeperNetwork.UNKNOWN) {
-                        beeperBridgeService.refreshRoomData(siblingId)
+                    if (!checkedSiblings.contains(siblingId)) {
+                        checkedSiblings.add(siblingId)
+                        val roomData = beeperBridgeService.getRoomData(siblingId)
+                        if (roomData == null || roomData.network == BeeperNetwork.UNKNOWN || roomData.overrideAvatarUrl == null) {
+                            beeperBridgeService.refreshRoomData(siblingId)
+                        }
                     }
                 }
             }
@@ -308,7 +327,7 @@ class TimelinePresenter(
                 }
                 is TimelineEvent.SwitchMergedRoom -> {
                     val serverNames = calculateServerNamesForRoom(room)
-                    navigator.navigateToRoom(event.roomId, null, serverNames)
+                    navigator.switchMergedRoom(event.roomId, serverNames)
                 }
                 is TimelineEvent.OpenThread -> {
                     navigator.navigateToThread(

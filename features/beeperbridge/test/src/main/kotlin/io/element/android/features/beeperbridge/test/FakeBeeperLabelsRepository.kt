@@ -35,6 +35,8 @@ class FakeBeeperLabelsRepository : BeeperLabelsRepository {
         hiddenNetworks = networks
     }
 
+    override suspend fun syncFromRemote(): Result<Unit> = Result.success(Unit)
+
     fun emitLabels(labels: List<BeeperLabel>) {
         labelsFlow.value = labels
     }

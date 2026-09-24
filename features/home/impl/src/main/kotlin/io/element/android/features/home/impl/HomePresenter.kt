@@ -31,6 +31,7 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
@@ -45,6 +46,8 @@ class HomePresenter(
     private val logoutPresenter: Presenter<DirectLogoutState>,
     private val rageshakeFeatureAvailability: RageshakeFeatureAvailability,
     private val sessionStore: SessionStore,
+    private val virtualSpacesProvider: io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider,
+    private val beeperLabelsRepository: io.element.android.features.beeperbridge.api.BeeperLabelsRepository,
 ) : Presenter<HomeState> {
     private val currentUserWithNeighborsBuilder = CurrentUserWithNeighborsBuilder()
 
@@ -69,6 +72,12 @@ class HomePresenter(
                 HomeNavigationBarItem.from(currentHomeNavigationBarItemOrdinal)
             }
         }
+        val selectedVirtualSpaceId by virtualSpacesProvider.getSelectedSpace().collectAsState()
+        val beeperLabelsList by beeperLabelsRepository.getLabelsFlow().collectAsState(initial = emptyList())
+        val beeperLabels = remember(beeperLabelsList) {
+            beeperLabelsList.filter { it.isShownInInbox }.toImmutableList()
+        }
+
         LaunchedEffect(Unit) {
             // Force a refresh of the profile
             client.getUserProfile()
@@ -82,6 +91,13 @@ class HomePresenter(
                 is HomeEvent.SelectHomeNavigationBarItem -> {
                     currentHomeNavigationBarItemOrdinal = event.item.ordinal
                 }
+                is HomeEvent.SelectVirtualSpace -> {
+                    virtualSpacesProvider.selectSpace(event.spaceId)
+                    if (event.spaceId is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.LabelSpace ||
+                        event.spaceId is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats) {
+                        currentHomeNavigationBarItemOrdinal = HomeNavigationBarItem.Chats.ordinal
+                    }
+                }
                 is HomeEvent.SwitchToAccount -> coroutineState.launch {
                     sessionStore.setLatestSession(event.sessionId.value)
                 }
@@ -94,6 +110,8 @@ class HomePresenter(
             showAvatarIndicator = showAvatarIndicator,
             hasNetworkConnection = isOnline,
             currentHomeNavigationBarItem = currentHomeNavigationBarItem,
+            selectedVirtualSpaceId = selectedVirtualSpaceId,
+            beeperLabels = beeperLabels,
             roomListState = roomListState,
             homeSpacesState = homeSpacesState,
             snackbarMessage = snackbarMessage,

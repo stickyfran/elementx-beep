@@ -54,6 +54,10 @@ class FakeMessagesNavigator(
         onNavigateToRoomLambda(roomId, eventId, serverNames)
     }
 
+    override fun switchMergedRoom(roomId: RoomId, serverNames: List<String>) {
+        onNavigateToRoomLambda(roomId, null, serverNames)
+    }
+
     override fun navigateToMember(userId: UserId) {
         navigateToMemberLambda(userId)
     }

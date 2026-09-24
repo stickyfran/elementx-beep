@@ -8,6 +8,8 @@
 
 package io.element.android.features.home.impl
 
+import io.element.android.features.beeperbridge.api.BeeperLabel
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
@@ -15,6 +17,7 @@ import io.element.android.features.logout.api.direct.DirectLogoutState
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 data class HomeState(
     /**
@@ -25,6 +28,8 @@ data class HomeState(
     val showAvatarIndicator: Boolean,
     val hasNetworkConnection: Boolean,
     val currentHomeNavigationBarItem: HomeNavigationBarItem,
+    val selectedVirtualSpaceId: VirtualSpaceId = VirtualSpaceId.AllChats,
+    val beeperLabels: ImmutableList<BeeperLabel> = persistentListOf(),
     val roomListState: RoomListState,
     val homeSpacesState: HomeSpacesState,
     val snackbarMessage: SnackbarMessage?,
@@ -32,6 +37,8 @@ data class HomeState(
     val directLogoutState: DirectLogoutState,
     val eventSink: (HomeEvent) -> Unit,
 ) {
-    val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
+    val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats ||
+        roomListState.spaceFiltersState is SpaceFiltersState.Selected ||
+        selectedVirtualSpaceId != VirtualSpaceId.AllChats
     val displayRoomListFilters = currentHomeNavigationBarItem == HomeNavigationBarItem.Chats && roomListState.displayFilters
 }
