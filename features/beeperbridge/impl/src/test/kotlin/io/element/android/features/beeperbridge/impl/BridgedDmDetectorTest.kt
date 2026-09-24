@@ -15,7 +15,7 @@ class BridgedDmDetectorTest {
     private val detector = BridgedDmDetector()
 
     @Test
-    fun `detects valid fake dm`() {
+    fun `detects valid fake dm without room name`() {
         val result = detector.analyze(
             roomName = null,
             members = listOf(
@@ -31,30 +31,50 @@ class BridgedDmDetectorTest {
     }
 
     @Test
-    fun `returns false if room has a name`() {
+    fun `detects valid fake dm even when room has a contact name`() {
         val result = detector.analyze(
-            roomName = "My Group",
+            roomName = "Bruno Musco",
             members = listOf(
                 RoomMemberStub("@local:example.com", isLocalUser = true),
-                RoomMemberStub("@whatsapp_bot:beeper.local", isLocalUser = false),
-                RoomMemberStub("@whatsapp_12345:beeper.local", isLocalUser = false),
+                RoomMemberStub("@whatsappbot:custom.homeserver.org", isLocalUser = false),
+                RoomMemberStub("@whatsapp_5491127536793:custom.homeserver.org", isLocalUser = false),
             )
         )
-        assertThat(result.isFakeDm).isFalse()
+        assertThat(result.isFakeDm).isTrue()
+        assertThat(result.botMxid).isEqualTo("@whatsappbot:custom.homeserver.org")
+        assertThat(result.contactMxid).isEqualTo("@whatsapp_5491127536793:custom.homeserver.org")
+        assertThat(result.network).isEqualTo(BeeperNetwork.WHATSAPP)
     }
 
     @Test
-    fun `returns false if room has too many members`() {
+    fun `detects network for group chats with many members but marks fake dm false`() {
         val result = detector.analyze(
-            roomName = null,
+            roomName = "Family Group",
             members = listOf(
                 RoomMemberStub("@local:example.com", isLocalUser = true),
-                RoomMemberStub("@whatsapp_bot:beeper.local", isLocalUser = false),
-                RoomMemberStub("@whatsapp_12345:beeper.local", isLocalUser = false),
-                RoomMemberStub("@whatsapp_67890:beeper.local", isLocalUser = false),
+                RoomMemberStub("@whatsappbot:custom.homeserver.org", isLocalUser = false),
+                RoomMemberStub("@whatsapp_1111:custom.homeserver.org", isLocalUser = false),
+                RoomMemberStub("@whatsapp_2222:custom.homeserver.org", isLocalUser = false),
+                RoomMemberStub("@whatsapp_3333:custom.homeserver.org", isLocalUser = false),
             )
         )
         assertThat(result.isFakeDm).isFalse()
+        assertThat(result.network).isEqualTo(BeeperNetwork.WHATSAPP)
+    }
+
+    @Test
+    fun `detects instagram fake dm`() {
+        val result = detector.analyze(
+            roomName = "Friend",
+            members = listOf(
+                RoomMemberStub("@local:example.com", isLocalUser = true),
+                RoomMemberStub("@metabot:custom.homeserver.org", isLocalUser = false),
+                RoomMemberStub("@instagram_user:custom.homeserver.org", isLocalUser = false),
+            )
+        )
+        assertThat(result.isFakeDm).isTrue()
+        assertThat(result.network).isEqualTo(BeeperNetwork.INSTAGRAM)
+        assertThat(result.contactMxid).isEqualTo("@instagram_user:custom.homeserver.org")
     }
 
     @Test
@@ -63,11 +83,12 @@ class BridgedDmDetectorTest {
             roomName = null,
             members = listOf(
                 RoomMemberStub("@local:example.com", isLocalUser = true),
-                RoomMemberStub("@whatsapp_bot:beeper.local", isLocalUser = false),
+                RoomMemberStub("@whatsappbot:custom.homeserver.org", isLocalUser = false),
             )
         )
         assertThat(result.isFakeDm).isFalse()
         assertThat(result.isIncomplete).isTrue()
-        assertThat(result.botMxid).isEqualTo("@whatsapp_bot:beeper.local")
+        assertThat(result.botMxid).isEqualTo("@whatsappbot:custom.homeserver.org")
+        assertThat(result.network).isEqualTo(BeeperNetwork.WHATSAPP)
     }
 }

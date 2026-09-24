@@ -35,6 +35,7 @@ data class TimelineState(
     val displayThreadSummaries: Boolean,
     val displayJumpToUnread: Boolean,
     val jumpToUnread: JumpToUnreadState,
+    val hasUnreadMessages: Boolean = false,
     val isManualReadReceiptsEnabled: Boolean,
     val isShowManualReadBannerEnabled: Boolean,
     val isShowManualReadBottomEnabled: Boolean,

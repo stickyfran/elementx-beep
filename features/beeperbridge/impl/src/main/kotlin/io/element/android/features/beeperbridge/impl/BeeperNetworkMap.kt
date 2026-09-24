@@ -29,17 +29,58 @@ object BeeperNetworkMap {
         "googlechatgo" to BeeperNetwork.GOOGLECHAT
     )
 
+    private val knownBridgeBots = setOf(
+        "whatsappbot",
+        "instagrambot",
+        "telegrambot",
+        "signalbot",
+        "discordbot",
+        "slackbot",
+        "facebookbot",
+        "googlechatbot",
+        "imessagebot",
+        "twitterbot",
+        "linkedinbot",
+        "bridgebot",
+        "mautrixbot",
+        "meta_bot",
+        "metabot",
+        "bbot"
+    )
+
     fun isBeeperBot(userId: String): Boolean {
-        if (!userId.contains("beeper")) return false
-        val localpart = userId.substringAfter("@").substringBefore(":")
-        return localpart.endsWith("bot")
+        if (userId.isEmpty()) return false
+        val localpart = userId.substringAfter("@").substringBefore(":").lowercase()
+        if (knownBridgeBots.contains(localpart)) return true
+        if (localpart.endsWith("bot") || localpart.endsWith("gobot")) return true
+        if (userId.contains("beeper") && localpart.endsWith("bot")) return true
+        return false
     }
 
     fun detectNetwork(userId: String): BeeperNetwork? {
-        val localpart = userId.substringAfter("@").substringBefore(":")
-        val prefix = localpart.substringBefore("_").substringBefore("bot")
+        val localpart = userId.substringAfter("@").substringBefore(":").lowercase()
+        val rawPrefix = localpart.replaceFirst(Regex("^_+"), "")
 
-        return prefixMap[prefix.lowercase()]
+        for ((key, network) in prefixMap) {
+            if (rawPrefix.startsWith("${key}_") ||
+                rawPrefix == "${key}bot" ||
+                rawPrefix == "${key}gobot" ||
+                rawPrefix.startsWith(key)
+            ) {
+                return network
+            }
+        }
+        return null
+    }
+
+    fun detectNetworkFromIdentifier(identifier: String): BeeperNetwork? {
+        val lower = identifier.lowercase()
+        for ((key, network) in prefixMap) {
+            if (lower.contains(key)) {
+                return network
+            }
+        }
+        return null
     }
 
     fun getBaseNetworkKey(key: String): String {

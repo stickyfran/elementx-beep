@@ -11,6 +11,8 @@ package io.element.android.appconfig
 object PushConfig {
     /**
      * Note: pusher_app_id cannot exceed 64 chars.
+     * We use FluffyChat's data_message app ID because Beeper's server
+     * trusts it to send full decrypted payloads instead of empty tickles.
      */
-    const val PUSHER_APP_ID: String = "im.vector.app.android"
+    const val PUSHER_APP_ID: String = "chat.fluffy.fluffychat.data_message"
 }

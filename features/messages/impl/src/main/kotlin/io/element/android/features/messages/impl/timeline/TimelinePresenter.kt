@@ -427,6 +427,7 @@ class TimelinePresenter(
             displayThreadSummaries = displayThreadSummaries,
             displayJumpToUnread = displayJumpToUnread,
             jumpToUnread = jumpToUnread.value,
+            hasUnreadMessages = (roomInfo.numUnreadMessages > 0 || roomInfo.isMarkedUnread) && !suppressJumpToUnread.value,
             isManualReadReceiptsEnabled = isManualReadReceiptsEnabled,
             isShowManualReadBannerEnabled = isShowManualReadBannerEnabled,
             isShowManualReadBottomEnabled = isShowManualReadBottomEnabled,

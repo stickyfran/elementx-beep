@@ -201,7 +201,7 @@ fun TimelineView(
                 reverseLayout = true,
                 contentPadding = PaddingValues(top = 64.dp, bottom = 8.dp),
             ) {
-                if (state.isManualReadReceiptsEnabled && state.isShowManualReadBottomEnabled && state.jumpToUnread != JumpToUnreadState.Hidden) {
+                if (state.isManualReadReceiptsEnabled && state.isShowManualReadBottomEnabled && (state.hasUnreadMessages || state.jumpToUnread != JumpToUnreadState.Hidden)) {
                     item(key = "manual_read_bottom_item") {
                         ManualReadBottomButton(
                             onClick = ::onMarkAllAsRead,
@@ -259,6 +259,7 @@ fun TimelineView(
                 focusRequestState = state.focusRequestState,
                 displayJumpToUnread = state.displayJumpToUnread,
                 jumpToUnread = state.jumpToUnread,
+                hasUnreadMessages = state.hasUnreadMessages,
                 isManualReadReceiptsEnabled = state.isManualReadReceiptsEnabled,
                 isShowManualReadInputBarEnabled = state.isShowManualReadInputBarEnabled,
                 onScrollFinishAt = ::onScrollFinishAt,
@@ -346,6 +347,7 @@ private fun BoxScope.TimelineScrollHelper(
     focusRequestState: FocusRequestState,
     displayJumpToUnread: Boolean,
     jumpToUnread: JumpToUnreadState,
+    hasUnreadMessages: Boolean,
     isManualReadReceiptsEnabled: Boolean,
     isShowManualReadInputBarEnabled: Boolean,
     onScrollFinishAt: (Int) -> Unit,
@@ -455,7 +457,7 @@ private fun BoxScope.TimelineScrollHelper(
     ) {
         val isManualReadButtonVisible = isManualReadReceiptsEnabled &&
             isShowManualReadInputBarEnabled &&
-            jumpToUnread != JumpToUnreadState.Hidden
+            (hasUnreadMessages || jumpToUnread != JumpToUnreadState.Hidden)
 
         ManualReadButton(
             isVisible = isManualReadButtonVisible,

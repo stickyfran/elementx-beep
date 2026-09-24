@@ -10,6 +10,7 @@ package io.element.android.features.home.impl.datasource
 
 import dev.zacsweers.metro.Inject
 import io.element.android.features.beeperbridge.api.BeeperBridgeService
+import io.element.android.features.beeperbridge.api.DisplayNameSanitizer
 import io.element.android.features.home.impl.model.LatestEvent
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.model.RoomSummaryDisplayType
@@ -47,10 +48,11 @@ class RoomListRoomSummaryFactory(
             }
         }
 
-        val nameOverride = beeperData?.overrideDisplayName?.takeIf { it.isNotBlank() }
+        val rawName = beeperData?.overrideDisplayName?.takeIf { it.isNotBlank() }
             ?: roomInfo.name?.takeIf { it.isNotBlank() }
             ?: roomInfo.rawName?.takeIf { it.isNotBlank() }
             ?: "Empty Room"
+        val nameOverride = DisplayNameSanitizer.sanitize(rawName).ifEmpty { rawName }
 
         var avatarData = roomInfo.getAvatarData(size = AvatarSize.RoomListItem)
         if (beeperData?.overrideAvatarUrl != null) {

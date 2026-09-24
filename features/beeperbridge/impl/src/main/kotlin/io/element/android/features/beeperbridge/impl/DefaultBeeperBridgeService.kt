@@ -13,6 +13,7 @@ import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.BeeperRoomData
+import io.element.android.features.beeperbridge.api.DisplayNameSanitizer
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -93,17 +94,29 @@ class DefaultBeeperBridgeService @Inject constructor(
                     result.network
                 )
 
-                val contactDisplayName = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.displayName else null
+                val rawDisplayName = if (result.isFakeDm) {
+                    membersList.find { it.userId == result.contactMxid }?.displayName
+                        ?: roomName
+                        ?: room.info().name
+                } else {
+                    roomName ?: room.info().name
+                }
+                val contactDisplayName = DisplayNameSanitizer.sanitize(rawDisplayName).takeIf { it.isNotBlank() }
                 val contactAvatarUrl = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.avatarUrl else null
 
+                var detectedNetwork = result.network
+                if (detectedNetwork == null) {
+                    detectedNetwork = BeeperNetworkMap.detectNetworkFromIdentifier(roomId)
+                }
+
                 val beeperData = BeeperRoomData(
-                    network = result.network ?: BeeperNetwork.UNKNOWN,
+                    network = detectedNetwork ?: BeeperNetwork.UNKNOWN,
                     isFakeDm = result.isFakeDm,
                     botMxid = result.botMxid,
                     realContactMxid = result.contactMxid,
                     overrideDisplayName = contactDisplayName,
                     overrideAvatarUrl = contactAvatarUrl,
-                    networkKey = result.network?.name?.lowercase(),
+                    networkKey = detectedNetwork?.name?.lowercase(),
                     fromCache = false
                 )
 
