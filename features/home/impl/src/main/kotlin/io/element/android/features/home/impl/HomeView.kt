@@ -114,7 +114,7 @@ fun HomeView(
             io.element.android.features.home.impl.components.MergeContactPickerBottomSheet(
                 state = state.mergePickerMenu,
                 onDismiss = { state.eventSink(RoomListEvent.HideMergePicker) },
-                onMergeSelected = { siblingRoomId, contactName ->
+                onMergeSelect = { siblingRoomId, contactName ->
                     state.eventSink(
                         RoomListEvent.PerformMerge(
                             targetRoomId = state.mergePickerMenu.primaryRoomId,

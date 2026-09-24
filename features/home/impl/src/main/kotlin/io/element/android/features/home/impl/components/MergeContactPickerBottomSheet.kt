@@ -51,7 +51,7 @@ import io.element.android.libraries.matrix.api.core.RoomId
 fun MergeContactPickerBottomSheet(
     state: RoomListState.MergePickerMenu.Shown,
     onDismiss: () -> Unit,
-    onMergeSelected: (siblingRoomId: RoomId, contactName: String) -> Unit,
+    onMergeSelect: (siblingRoomId: RoomId, contactName: String) -> Unit,
     onUnmergeRoom: (roomId: RoomId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -181,7 +181,7 @@ fun MergeContactPickerBottomSheet(
                         CandidateRoomRow(
                             room = candidate,
                             onClick = {
-                                onMergeSelected(candidate.roomId, customDisplayName)
+                                onMergeSelect(candidate.roomId, customDisplayName)
                             }
                         )
                     }
