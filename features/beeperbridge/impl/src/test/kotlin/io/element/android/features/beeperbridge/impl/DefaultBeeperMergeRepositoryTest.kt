@@ -18,12 +18,11 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class DefaultBeeperMergeRepositoryTest {
-
     @Test
     fun `save, lookup, and sibling queries work correctly`() = runTest {
         val testScope = TestScope()
         val inMemoryDataStoreFactory = InMemoryPreferenceDataStoreFactory()
-        
+
         // We test with a fake account data service
         val accountDataService = FakeMatrixAccountDataService()
         val repository = DefaultBeeperMergeRepository(

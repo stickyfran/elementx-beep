@@ -18,6 +18,7 @@ dependencies {
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.compound)
     implementation(projects.libraries.architecture)
+    implementation(projects.libraries.core)
     implementation(projects.libraries.preferences.api)
     implementation(projects.libraries.network)
     implementation(projects.libraries.sessionStorage.api)

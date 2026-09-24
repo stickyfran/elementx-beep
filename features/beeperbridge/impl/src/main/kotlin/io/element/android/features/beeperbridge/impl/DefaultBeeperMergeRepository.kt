@@ -14,6 +14,7 @@ import dev.zacsweers.metro.Inject
 import io.element.android.features.beeperbridge.api.BeeperMergeRepository
 import io.element.android.features.beeperbridge.api.DisplayNameSanitizer
 import io.element.android.features.beeperbridge.api.MergedContact
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.preferences.api.store.PreferenceDataStoreFactory
@@ -88,7 +89,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
     }
 
     override suspend fun saveMergedContact(contact: MergedContact): Result<Unit> {
-        return runCatching {
+        return runCatchingExceptions {
             val sanitized = contact.copy(
                 displayName = DisplayNameSanitizer.sanitize(contact.displayName).ifEmpty { contact.displayName }
             )
@@ -99,7 +100,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
     }
 
     override suspend fun deleteMergedContact(mergeId: String): Result<Unit> {
-        return runCatching {
+        return runCatchingExceptions {
             val updated = _mergedContactsFlow.value.toMutableMap()
             if (updated.remove(mergeId) != null) {
                 persistAndSync(updated)
@@ -108,7 +109,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
     }
 
     override suspend fun addRoomToMerge(mergeId: String, roomId: String): Result<Unit> {
-        return runCatching {
+        return runCatchingExceptions {
             val contact = _mergedContactsFlow.value[mergeId] ?: error("Merge contact not found: $mergeId")
             if (!contact.roomIds.contains(roomId)) {
                 val updatedContact = contact.copy(roomIds = contact.roomIds + roomId)
@@ -120,8 +121,8 @@ class DefaultBeeperMergeRepository @Inject constructor(
     }
 
     override suspend fun removeRoomFromMerge(mergeId: String, roomId: String): Result<Unit> {
-        return runCatching {
-            val contact = _mergedContactsFlow.value[mergeId] ?: return@runCatching
+        return runCatchingExceptions {
+            val contact = _mergedContactsFlow.value[mergeId] ?: return@runCatchingExceptions
             val updatedRoomIds = contact.roomIds.filter { it != roomId }
             val updated = _mergedContactsFlow.value.toMutableMap()
             if (updatedRoomIds.isEmpty()) {
@@ -134,7 +135,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
     }
 
     override suspend fun syncFromRemote(): Result<Unit> {
-        return runCatching {
+        return runCatchingExceptions {
             val remoteJson = matrixAccountDataService.getAccountData(ACCOUNT_DATA_KEY).getOrNull()
             if (remoteJson != null) {
                 val remoteContacts = parseContacts(remoteJson)

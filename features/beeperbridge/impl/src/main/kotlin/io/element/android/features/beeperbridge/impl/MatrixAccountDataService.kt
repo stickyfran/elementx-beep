@@ -8,6 +8,7 @@
 package io.element.android.features.beeperbridge.impl
 
 import dev.zacsweers.metro.Inject
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,7 @@ open class MatrixAccountDataService(
     }
 
     open suspend fun getAccountData(type: String): Result<String?> = withContext(Dispatchers.IO) {
-        runCatching {
+        runCatchingExceptions {
             val (baseUrl, token) = getAuthDetails() ?: error("Session details not found")
             val encodedUserId = URLEncoder.encode(matrixClient.sessionId.value, "UTF-8")
             val encodedType = URLEncoder.encode(type, "UTF-8")
@@ -59,7 +60,7 @@ open class MatrixAccountDataService(
     }
 
     open suspend fun setAccountData(type: String, contentJson: String): Result<Unit> = withContext(Dispatchers.IO) {
-        runCatching {
+        runCatchingExceptions {
             val (baseUrl, token) = getAuthDetails() ?: error("Session details not found")
             val encodedUserId = URLEncoder.encode(matrixClient.sessionId.value, "UTF-8")
             val encodedType = URLEncoder.encode(type, "UTF-8")
@@ -73,9 +74,7 @@ open class MatrixAccountDataService(
                 .build()
 
             okHttpClient.newCall(request).execute().use { response ->
-                if (response.isSuccessful) {
-                    Unit
-                } else {
+                if (!response.isSuccessful) {
                     error("Failed to set account data: HTTP ${response.code} - ${response.message}")
                 }
             }

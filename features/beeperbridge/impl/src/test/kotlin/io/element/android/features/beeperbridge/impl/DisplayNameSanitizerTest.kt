@@ -12,7 +12,6 @@ import io.element.android.features.beeperbridge.api.DisplayNameSanitizer
 import org.junit.Test
 
 class DisplayNameSanitizerTest {
-
     @Test
     fun `strips phone number in parentheses from contact name`() {
         val result = DisplayNameSanitizer.sanitize("Bruno Musco Nuevo (+5491127536793)")
