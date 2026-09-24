@@ -53,14 +53,10 @@ class RoomListRoomSummaryFactory(
             if (quickNetwork != null && quickNetwork != BeeperNetwork.UNKNOWN) {
                 beeperData = BeeperRoomData(
                     network = quickNetwork,
-                    isFakeDm = false,
+                    isFakeDm = beeperBridgeService.isFakeDm(roomSummary.roomId.value),
                     networkKey = quickNetwork.name.lowercase(),
                     fromCache = true,
                 )
-            }
-
-            sessionCoroutineScope.launch {
-                beeperBridgeService.refreshRoomData(roomSummary.roomId.value)
             }
         }
 

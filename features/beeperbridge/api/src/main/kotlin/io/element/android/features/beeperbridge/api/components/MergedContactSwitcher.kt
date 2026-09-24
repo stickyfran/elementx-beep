@@ -124,20 +124,12 @@ fun MergedContactSwitcher(
                         // Network badge overlay on bottom right of the avatar
                         Box(
                             modifier = Modifier
-                                .size(14.dp)
+                                .size(10.dp)
                                 .align(Alignment.BottomEnd)
+                                .border(1.dp, MaterialTheme.colorScheme.surface, CircleShape)
                                 .clip(CircleShape)
                                 .background(Color(colorHex))
-                                .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(network.iconResId),
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(8.dp)
-                            )
-                        }
+                        )
 
                         // Unread count badge on top right
                         if (channel.unreadCount > 0) {

@@ -12,6 +12,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
 import io.element.android.libraries.core.extensions.runCatchingExceptions
@@ -28,6 +29,7 @@ import org.json.JSONObject
 import timber.log.Timber
 
 @ContributesBinding(SessionScope::class)
+@SingleIn(SessionScope::class)
 class DefaultBeeperLabelsRepository @Inject constructor(
     private val matrixAccountDataService: MatrixAccountDataService,
     preferenceDataStoreFactory: PreferenceDataStoreFactory,

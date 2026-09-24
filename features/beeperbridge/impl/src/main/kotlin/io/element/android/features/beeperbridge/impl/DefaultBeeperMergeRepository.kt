@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.element.android.features.beeperbridge.api.BeeperMergeRepository
 import io.element.android.features.beeperbridge.api.DisplayNameSanitizer
 import io.element.android.features.beeperbridge.api.MergedContact
@@ -30,6 +31,7 @@ import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 
 @ContributesBinding(SessionScope::class)
+@SingleIn(SessionScope::class)
 class DefaultBeeperMergeRepository @Inject constructor(
     private val matrixAccountDataService: MatrixAccountDataService,
     preferenceDataStoreFactory: PreferenceDataStoreFactory,

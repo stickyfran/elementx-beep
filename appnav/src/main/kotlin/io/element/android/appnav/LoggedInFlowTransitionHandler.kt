@@ -13,20 +13,24 @@ import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.bumble.appyx.core.navigation.transition.JumpToEndTransitionHandler
 import com.bumble.appyx.core.navigation.transition.ModifierTransitionHandler
 import com.bumble.appyx.core.navigation.transition.TransitionDescriptor
 import com.bumble.appyx.navmodel.backstack.BackStack
+import com.bumble.appyx.navmodel.backstack.operation.Replace
 import com.bumble.appyx.navmodel.backstack.transitionhandler.rememberBackstackFader
 import com.bumble.appyx.navmodel.backstack.transitionhandler.rememberBackstackSlider
 
 /**
  * A TransitionHandler that uses fade transition when Placeholder is being removed,
+ * instant transition when switching between rooms in-place (e.g. merged contact channels),
  * and slide transition for all other cases.
  */
 class LoggedInFlowTransitionHandler(
     private val backstack: BackStack<LoggedInFlowNode.NavTarget>,
     private val slider: ModifierTransitionHandler<LoggedInFlowNode.NavTarget, BackStack.State>,
     private val fader: ModifierTransitionHandler<LoggedInFlowNode.NavTarget, BackStack.State>,
+    private val instant: ModifierTransitionHandler<LoggedInFlowNode.NavTarget, BackStack.State> = JumpToEndTransitionHandler(),
 ) : ModifierTransitionHandler<LoggedInFlowNode.NavTarget, BackStack.State>() {
     override fun createModifier(
         modifier: Modifier,
@@ -37,7 +41,14 @@ class LoggedInFlowTransitionHandler(
             element.key.navTarget == LoggedInFlowNode.NavTarget.Placeholder &&
                 element.targetState != BackStack.State.ACTIVE
         }
-        val handler = if (isPlaceholderBeingRemoved) fader else slider
+        if (isPlaceholderBeingRemoved) {
+            return fader.createModifier(modifier, transition, descriptor)
+        }
+
+        val isRoomToRoomSwitch = descriptor.element is LoggedInFlowNode.NavTarget.Room &&
+            descriptor.operation is Replace
+
+        val handler = if (isRoomToRoomSwitch) instant else slider
         return handler.createModifier(modifier, transition, descriptor)
     }
 }

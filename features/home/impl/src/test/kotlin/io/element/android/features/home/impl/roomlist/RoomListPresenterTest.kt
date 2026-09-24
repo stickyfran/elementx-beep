@@ -12,6 +12,7 @@ import com.google.common.truth.Truth.assertThat
 import im.vector.app.features.analytics.plan.Interaction
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
+import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
 import io.element.android.features.beeperbridge.api.BeeperMergeRepository
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
@@ -677,6 +678,7 @@ class RoomListPresenterTest {
         virtualSpacesProvider: VirtualSpacesProvider = FakeVirtualSpacesProvider(),
         beeperLabelsRepository: BeeperLabelsRepository = FakeBeeperLabelsRepository(),
         beeperMergeRepository: BeeperMergeRepository = FakeBeeperMergeRepository(),
+        beeperBridgeService: BeeperBridgeService = FakeBeeperBridgeService(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -712,5 +714,6 @@ class RoomListPresenterTest {
         virtualSpacesProvider = virtualSpacesProvider,
         beeperLabelsRepository = beeperLabelsRepository,
         beeperMergeRepository = beeperMergeRepository,
+        beeperBridgeService = beeperBridgeService,
     )
 }

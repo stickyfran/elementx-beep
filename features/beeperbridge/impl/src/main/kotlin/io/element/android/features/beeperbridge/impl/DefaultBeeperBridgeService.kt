@@ -9,35 +9,101 @@ package io.element.android.features.beeperbridge.impl
 
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperLabel
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.BeeperRoomData
 import io.element.android.features.beeperbridge.api.DisplayNameSanitizer
 import io.element.android.libraries.di.SessionScope
+import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 
 @ContributesBinding(SessionScope::class)
+@SingleIn(SessionScope::class)
 class DefaultBeeperBridgeService @Inject constructor(
     private val matrixClient: MatrixClient,
     private val bridgedDmDetector: BridgedDmDetector,
+    private val matrixAccountDataService: MatrixAccountDataService,
+    @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
 ) : BeeperBridgeService {
     private val cache = ConcurrentHashMap<String, BeeperRoomData>()
+    private val directRoomToNetwork = ConcurrentHashMap<String, BeeperNetwork>()
+    private val directRoomToUserId = ConcurrentHashMap<String, String>()
 
     private val _cacheUpdates = MutableSharedFlow<String>(extraBufferCapacity = 512)
     override val cacheUpdates: Flow<String> = _cacheUpdates
+
+    init {
+        sessionCoroutineScope.launch {
+            loadDirectChatsMap()
+        }
+    }
+
+    private suspend fun loadDirectChatsMap() {
+        val result = matrixAccountDataService.getAccountData("m.direct")
+        val jsonStr = result.getOrNull() ?: return
+        try {
+            val json = JSONObject(jsonStr)
+            val keys = json.keys()
+            var count = 0
+            while (keys.hasNext()) {
+                val userId = keys.next()
+                val detectedNetwork = BeeperNetworkMap.detectNetwork(userId)
+                val roomArray = json.optJSONArray(userId) ?: continue
+                for (i in 0 until roomArray.length()) {
+                    val roomId = roomArray.optString(i)
+                    if (roomId.isNotBlank()) {
+                        directRoomToUserId[roomId] = userId
+                        if (detectedNetwork != null && detectedNetwork != BeeperNetwork.UNKNOWN) {
+                            directRoomToNetwork[roomId] = detectedNetwork
+                            cache.computeIfAbsent(roomId) {
+                                BeeperRoomData(
+                                    network = detectedNetwork,
+                                    isFakeDm = true,
+                                    networkKey = detectedNetwork.name.lowercase(),
+                                    fromCache = true,
+                                )
+                            }
+                            count++
+                        }
+                    }
+                }
+            }
+            Timber.d("BeeperBridge: Loaded m.direct map with $count bridged DMs")
+            _cacheUpdates.tryEmit("m.direct")
+        } catch (e: Exception) {
+            Timber.e(e, "BeeperBridge: Failed to parse m.direct account data")
+        }
+    }
 
     override fun isEnabled(): Boolean {
         return true // Default for now
     }
 
     override fun getRoomData(roomId: String): BeeperRoomData? {
-        return cache[roomId]
+        val cached = cache[roomId]
+        if (cached != null) return cached
+        val network = directRoomToNetwork[roomId] ?: directRoomToUserId[roomId]?.let { BeeperNetworkMap.detectNetwork(it) }
+        if (network != null) {
+            val roomData = BeeperRoomData(
+                network = network,
+                isFakeDm = true,
+                networkKey = network.name.lowercase(),
+                fromCache = true,
+            )
+            cache[roomId] = roomData
+            return roomData
+        }
+        return null
     }
 
     override fun getNetworkForRoom(roomId: String): BeeperNetwork? {
@@ -45,13 +111,25 @@ class DefaultBeeperBridgeService @Inject constructor(
         if (cached != null && cached != BeeperNetwork.UNKNOWN) {
             return cached
         }
+        val fromDirect = directRoomToNetwork[roomId]
+        if (fromDirect != null) {
+            return fromDirect
+        }
+        val userId = directRoomToUserId[roomId]
+        if (userId != null) {
+            val net = BeeperNetworkMap.detectNetwork(userId)
+            if (net != null) {
+                directRoomToNetwork[roomId] = net
+                return net
+            }
+        }
         val heuristic = BeeperNetworkMap.detectNetworkFromIdentifier(roomId)
         if (heuristic != null) return heuristic
         return cached
     }
 
     override fun isFakeDm(roomId: String): Boolean {
-        return cache[roomId]?.isFakeDm == true
+        return cache[roomId]?.isFakeDm == true || directRoomToNetwork.containsKey(roomId)
     }
 
     override fun getLabels(): List<BeeperLabel> {

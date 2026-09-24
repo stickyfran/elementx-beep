@@ -8,17 +8,15 @@
 package io.element.android.features.beeperbridge.api.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.element.android.features.beeperbridge.api.BeeperNetwork
@@ -27,7 +25,9 @@ import io.element.android.features.beeperbridge.api.BeeperNetwork
 fun BeeperNetworkBadge(
     network: BeeperNetwork,
     modifier: Modifier = Modifier,
-    size: Dp = 16.dp
+    size: Dp = 9.dp,
+    borderWidth: Dp = 1.dp,
+    borderColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     if (network == BeeperNetwork.UNKNOWN) return
 
@@ -36,15 +36,8 @@ fun BeeperNetworkBadge(
     Box(
         modifier = modifier
             .size(size)
+            .border(borderWidth, borderColor, CircleShape)
             .clip(CircleShape)
-            .background(Color(colorHex)),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            painter = painterResource(network.iconResId),
-            contentDescription = network.displayName,
-            tint = Color.White,
-            modifier = Modifier.padding(2.dp)
-        )
-    }
+            .background(Color(colorHex))
+    )
 }

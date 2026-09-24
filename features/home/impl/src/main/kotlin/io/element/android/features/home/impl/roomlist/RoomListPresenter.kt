@@ -27,6 +27,7 @@ import dev.zacsweers.metro.Inject
 import im.vector.app.features.analytics.plan.Interaction
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
+import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
 import io.element.android.features.beeperbridge.api.BeeperMergeRepository
 import io.element.android.features.beeperbridge.api.MergedContact
@@ -95,6 +96,7 @@ class RoomListPresenter(
     private val virtualSpacesProvider: VirtualSpacesProvider,
     private val beeperLabelsRepository: BeeperLabelsRepository,
     private val beeperMergeRepository: BeeperMergeRepository,
+    private val beeperBridgeService: BeeperBridgeService,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -474,7 +476,10 @@ class RoomListPresenter(
                     val totalUnreadMentions = siblingRooms.sumOf { it.numberOfUnreadMentions }
                     val totalUnreadNotifications = siblingRooms.sumOf { it.numberOfUnreadNotifications }
                     val hasMarkedUnread = siblingRooms.any { it.isMarkedUnread }
-                    val allNetworks = siblingRooms.mapNotNull { it.beeperData?.network }.distinct().toImmutableList()
+                    val allNetworks = contact.roomIds.mapNotNull { siblingId ->
+                        beeperBridgeService.getNetworkForRoom(siblingId)
+                            ?: siblingRooms.find { it.id == siblingId }?.beeperData?.network
+                    }.distinct().toImmutableList()
 
                     val mergedSummary = primaryRoom.copy(
                         name = contact.displayName.ifEmpty { primaryRoom.name },
