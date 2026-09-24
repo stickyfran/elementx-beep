@@ -142,3 +142,6 @@ lint/tmp/
 
 checkouts/**
 >>>>>>> upstream/develop
+
+scratch/
+test-job-log-*.txt
