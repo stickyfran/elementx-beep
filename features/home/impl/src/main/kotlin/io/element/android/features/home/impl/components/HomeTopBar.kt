@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
@@ -97,6 +101,8 @@ fun HomeTopBar(
     displayFilters: Boolean,
     filtersState: RoomListFiltersState,
     spaceFiltersState: SpaceFiltersState,
+    onSyncClick: () -> Unit = {},
+    isSyncing: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -149,6 +155,8 @@ fun HomeTopBar(
                     RoomListMenuItems(
                         onStartChatClick = onStartChatClick,
                         onToggleSearch = onToggleSearch,
+                        onSyncClick = onSyncClick,
+                        isSyncing = isSyncing,
                         onMenuActionClick = onMenuActionClick,
                         canReportBug = canReportBug,
                         spaceFiltersState = spaceFiltersState,
@@ -176,10 +184,29 @@ fun HomeTopBar(
 private fun RowScope.RoomListMenuItems(
     onStartChatClick: () -> Unit,
     onToggleSearch: () -> Unit,
+    onSyncClick: () -> Unit,
+    isSyncing: Boolean,
     onMenuActionClick: (RoomListMenuAction) -> Unit,
     canReportBug: Boolean,
     spaceFiltersState: SpaceFiltersState,
 ) {
+    IconButton(
+        onClick = onSyncClick,
+        enabled = !isSyncing,
+    ) {
+        if (isSyncing) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = ElementTheme.colors.iconPrimary,
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Sincronizar contactos y chats",
+            )
+        }
+    }
     IconButton(
         onClick = onStartChatClick,
     ) {
@@ -203,6 +230,20 @@ private fun RowScope.RoomListMenuItems(
             expanded = showMenu,
             onDismissRequest = { showMenu = false }
         ) {
+            DropdownMenuItem(
+                onClick = {
+                    showMenu = false
+                    onSyncClick()
+                },
+                text = { Text("Sincronizar Beeper y chats") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        tint = ElementTheme.colors.iconSecondary,
+                        contentDescription = null,
+                    )
+                }
+            )
             if (RoomListConfig.SHOW_INVITE_MENU_ITEM) {
                 DropdownMenuItem(
                     onClick = {

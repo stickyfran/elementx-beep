@@ -157,6 +157,7 @@ internal fun createHomePresenter(
     sessionStore: SessionStore = InMemorySessionStore(),
     virtualSpacesProvider: io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider = io.element.android.features.beeperbridge.test.FakeVirtualSpacesProvider(),
     beeperLabelsRepository: io.element.android.features.beeperbridge.api.BeeperLabelsRepository = io.element.android.features.beeperbridge.test.FakeBeeperLabelsRepository(),
+    beeperSyncService: io.element.android.features.beeperbridge.api.BeeperSyncService = io.element.android.features.beeperbridge.test.FakeBeeperSyncService(),
 ) = HomePresenter(
     client = client,
     syncService = syncService,
@@ -169,4 +170,5 @@ internal fun createHomePresenter(
     sessionStore = sessionStore,
     virtualSpacesProvider = virtualSpacesProvider,
     beeperLabelsRepository = beeperLabelsRepository,
+    beeperSyncService = beeperSyncService,
 )

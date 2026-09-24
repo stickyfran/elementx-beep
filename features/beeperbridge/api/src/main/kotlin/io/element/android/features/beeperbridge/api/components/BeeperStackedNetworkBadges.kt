@@ -25,22 +25,32 @@ import androidx.compose.ui.unit.dp
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import kotlinx.collections.immutable.ImmutableList
 
+import kotlinx.collections.immutable.persistentListOf
+
 private const val MAX_STACKED_NETWORKS = 4
 
 @Composable
 fun BeeperStackedNetworkBadges(
     networks: ImmutableList<BeeperNetwork>,
     modifier: Modifier = Modifier,
-    badgeSize: Dp = 8.dp,
+    activeNetwork: BeeperNetwork? = null,
+    unreadNetworks: ImmutableList<BeeperNetwork> = persistentListOf(),
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     val validNetworks = networks.filter { it != BeeperNetwork.UNKNOWN }.distinct().take(MAX_STACKED_NETWORKS)
     if (validNetworks.isEmpty()) return
 
-    if (validNetworks.size == 1) {
+    // Active network goes first in visual order
+    val sortedNetworks = if (activeNetwork != null && validNetworks.contains(activeNetwork)) {
+        (listOf(activeNetwork) + (validNetworks - activeNetwork)).distinct()
+    } else {
+        validNetworks
+    }
+
+    if (sortedNetworks.size == 1) {
         BeeperNetworkBadge(
-            network = validNetworks.first(),
+            network = sortedNetworks.first(),
             modifier = modifier,
             size = 9.dp,
             borderWidth = borderWidth,
@@ -51,18 +61,27 @@ fun BeeperStackedNetworkBadges(
 
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalArrangement = Arrangement.spacedBy(1.5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        validNetworks.forEach { network ->
+        sortedNetworks.forEach { network ->
+            val isActive = network == activeNetwork
+            val hasUnread = unreadNetworks.contains(network)
+            val dotSize = when {
+                isActive -> 10.dp
+                hasUnread -> 8.dp
+                else -> 6.5.dp
+            }
+            val dotBorderWidth = if (isActive) 1.5.dp else borderWidth
             val colorHex = android.graphics.Color.parseColor(network.colorHex)
             Box(
                 modifier = Modifier
-                    .size(badgeSize)
-                    .border(borderWidth, borderColor, CircleShape)
+                    .size(dotSize)
+                    .border(dotBorderWidth, borderColor, CircleShape)
                     .clip(CircleShape)
                     .background(Color(colorHex))
             )
         }
     }
 }
+

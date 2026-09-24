@@ -63,8 +63,16 @@ class DefaultBeeperMergeRepository @Inject constructor(
                 Timber.e(e, "BeeperMergeRepository: Failed to load cached merged contacts")
             }
 
-            // Sync from remote Matrix Account Data
-            syncFromRemote()
+            // Sync from remote Matrix Account Data with retry
+            var attempts = 0
+            while (attempts < 3) {
+                val res = syncFromRemote()
+                if (res.isSuccess && _mergedContactsFlow.value.isNotEmpty()) {
+                    break
+                }
+                attempts++
+                kotlinx.coroutines.delay(1000L * attempts)
+            }
         }
     }
 
@@ -192,6 +200,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
             prefs[contactsKey] = jsonStr
         }
         matrixAccountDataService.setAccountData(ACCOUNT_DATA_KEY, jsonStr)
+        matrixAccountDataService.setAccountData(FALLBACK_ACCOUNT_DATA_KEY, jsonStr)
     }
 
     private fun parseContacts(jsonStr: String): Map<String, MergedContact> {
@@ -226,7 +235,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
         val keys = objMap.keys()
         while (keys.hasNext()) {
             val mergeId = keys.next()
-            if (mergeId == "contacts" || mergeId == "merges") continue
+            if (mergeId == "contacts" || mergeId == "merges" || mergeId.startsWith("_")) continue
             val obj = objMap.optJSONObject(mergeId) ?: continue
             val contact = parseSingleContact(mergeId, obj) ?: continue
             result[mergeId] = contact
@@ -243,12 +252,12 @@ class DefaultBeeperMergeRepository @Inject constructor(
     }
 
     private fun parseSingleContact(mergeId: String, obj: JSONObject): MergedContact? {
-        val rawName = obj.optString("displayName", "")
+        val rawName = obj.optString("displayName", "").ifEmpty { obj.optString("name", "") }
         val displayName = DisplayNameSanitizer.sanitize(rawName).ifEmpty { rawName }
-        val avatarMxc = obj.optString("avatarMxc").takeIf { it.isNotBlank() }
+        val avatarMxc = obj.optString("avatarMxc").takeIf { it.isNotBlank() } ?: obj.optString("avatar_url").takeIf { it.isNotBlank() }
 
         val roomIdsList = mutableListOf<String>()
-        val roomIdsArray = obj.optJSONArray("roomIds")
+        val roomIdsArray = obj.optJSONArray("roomIds") ?: obj.optJSONArray("rooms")
         if (roomIdsArray != null) {
             for (i in 0 until roomIdsArray.length()) {
                 val rId = roomIdsArray.optString(i)

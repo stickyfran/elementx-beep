@@ -36,6 +36,7 @@ data class HomeState(
     val snackbarMessage: SnackbarMessage?,
     val canReportBug: Boolean,
     val directLogoutState: DirectLogoutState,
+    val beeperSyncState: io.element.android.features.beeperbridge.api.BeeperSyncState = io.element.android.features.beeperbridge.api.BeeperSyncState.Idle,
     val eventSink: (HomeEvent) -> Unit,
 ) {
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats ||

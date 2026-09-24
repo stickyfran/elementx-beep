@@ -17,4 +17,6 @@ interface BeeperBridgeService {
     val cacheUpdates: kotlinx.coroutines.flow.Flow<String>
     suspend fun invalidateCache()
     suspend fun refreshRoomData(roomId: String)
+    suspend fun syncDirectChats(): Result<Unit>
 }
+

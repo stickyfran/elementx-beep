@@ -14,9 +14,11 @@ interface BeeperLabelsRepository {
     fun getLabelsFlow(): Flow<List<BeeperLabel>>
     suspend fun saveLabel(label: BeeperLabel)
     suspend fun deleteLabel(labelId: String)
+    suspend fun getHiddenRoomIds(): Set<String>
     suspend fun getHiddenNetworks(): Set<String>
     suspend fun setHiddenNetworks(networks: Set<String>)
     suspend fun syncFromRemote(): Result<Unit>
     fun isSpacesTabVisibleFlow(): Flow<Boolean>
     suspend fun setSpacesTabVisible(visible: Boolean)
 }
+

@@ -52,6 +52,8 @@ data class RoomListRoomSummary(
     val mergedContact: MergedContact? = null,
     val siblingRoomIds: ImmutableList<String> = persistentListOf(),
     val mergedNetworks: ImmutableList<BeeperNetwork> = persistentListOf(),
+    val activeNetwork: BeeperNetwork? = null,
+    val unreadNetworks: ImmutableList<BeeperNetwork> = persistentListOf(),
 ) {
     val isHighlighted = userDefinedNotificationMode != RoomNotificationMode.MUTE &&
         (numberOfUnreadNotifications > 0 || numberOfUnreadMentions > 0) ||

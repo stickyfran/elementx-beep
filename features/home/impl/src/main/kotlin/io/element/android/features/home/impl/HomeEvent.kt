@@ -15,4 +15,6 @@ sealed interface HomeEvent {
     data class SelectVirtualSpace(val spaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId) : HomeEvent
     data class SetShowSpacesTab(val show: Boolean) : HomeEvent
     data class SwitchToAccount(val sessionId: SessionId) : HomeEvent
+    data object TriggerSmartSync : HomeEvent
 }
+

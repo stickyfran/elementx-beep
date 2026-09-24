@@ -31,4 +31,6 @@ class FakeBeeperBridgeService : BeeperBridgeService {
     override val cacheUpdates: Flow<String> = emptyFlow()
     override suspend fun invalidateCache() {}
     override suspend fun refreshRoomData(roomId: String) {}
+    override suspend fun syncDirectChats(): Result<Unit> = Result.success(Unit)
 }
+

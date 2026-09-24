@@ -29,6 +29,16 @@ class FakeBeeperLabelsRepository : BeeperLabelsRepository {
         labelsFlow.value = labelsFlow.value.filter { it.id != labelId }
     }
 
+    override suspend fun getHiddenRoomIds(): Set<String> {
+        val result = mutableSetOf<String>()
+        for (label in labelsFlow.value) {
+            if (!label.isShownInInbox) {
+                result.addAll(label.roomIds)
+            }
+        }
+        return result
+    }
+
     override suspend fun getHiddenNetworks(): Set<String> = hiddenNetworks
 
     override suspend fun setHiddenNetworks(networks: Set<String>) {

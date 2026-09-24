@@ -80,6 +80,17 @@ class DefaultBeeperLabelsRepository @Inject constructor(
         persistAndPush(currentLabels, hiddenNetworks)
     }
 
+    override suspend fun getHiddenRoomIds(): Set<String> {
+        val labels = getLabels()
+        val result = mutableSetOf<String>()
+        for (label in labels) {
+            if (!label.isShownInInbox) {
+                result.addAll(label.roomIds)
+            }
+        }
+        return result
+    }
+
     override suspend fun getHiddenNetworks(): Set<String> {
         return dataStore.data.map { prefs ->
             val jsonStr = prefs[hiddenNetworksKey] ?: "[]"

@@ -410,14 +410,18 @@ class LoggedInFlowNode(
                                         )
                                     }
                                 } else {
-                                    backstack.replace(
-                                        NavTarget.Room(
-                                            roomIdOrAlias = data.roomIdOrAlias,
-                                            serverNames = data.viaParameters,
-                                            trigger = JoinedRoomAnalyticsEvent.Trigger.Timeline,
-                                            initialElement = RoomNavigationTarget.Root(data.eventId),
+                                    lifecycleScope.launch {
+                                        val roomId = (data.roomIdOrAlias as? RoomIdOrAlias.Id)?.roomId
+                                        val joinedRoom = roomId?.let { matrixClient.getJoinedRoom(it) }
+                                        backstack.replace(
+                                            NavTarget.Room(
+                                                roomIdOrAlias = data.roomIdOrAlias,
+                                                serverNames = data.viaParameters,
+                                                trigger = JoinedRoomAnalyticsEvent.Trigger.Timeline,
+                                                initialElement = RoomNavigationTarget.Root(data.eventId, joinedRoom = joinedRoom),
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                             }
                             is PermalinkData.FallbackLink,

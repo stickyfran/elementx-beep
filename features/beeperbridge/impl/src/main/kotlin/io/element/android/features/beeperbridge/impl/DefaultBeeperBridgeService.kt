@@ -48,6 +48,15 @@ class DefaultBeeperBridgeService @Inject constructor(
         }
     }
 
+    override suspend fun syncDirectChats(): Result<Unit> {
+        return try {
+            loadDirectChatsMap()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     private suspend fun loadDirectChatsMap() {
         val result = matrixAccountDataService.getAccountData("m.direct")
         val jsonStr = result.getOrNull() ?: return

@@ -228,6 +228,8 @@ private fun RoomSummaryScaffoldRow(
             if (room.mergedNetworks.isNotEmpty()) {
                 BeeperStackedNetworkBadges(
                     networks = room.mergedNetworks,
+                    activeNetwork = room.activeNetwork ?: room.beeperData?.network,
+                    unreadNetworks = room.unreadNetworks,
                     modifier = Modifier.align(Alignment.BottomEnd)
                 )
             } else {

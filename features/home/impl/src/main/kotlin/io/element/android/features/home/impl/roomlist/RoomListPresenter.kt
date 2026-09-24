@@ -412,15 +412,12 @@ class RoomListPresenter(
         timber.log.Timber.d("BeeperBridge: filterRoomsForSpace IN with ${rooms.size} rooms, spaceId: ${spaceId.javaClass.simpleName}")
         val result = when (spaceId) {
             is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.AllChats -> {
-                val hiddenNetworks = beeperLabelsRepository.getHiddenNetworks()
-                rooms.filter { room ->
-                    val network = room.beeperData?.network
-                    network == null || (!hiddenNetworks.contains(network.name) && !hiddenNetworks.contains(network.name.lowercase()))
-                }
+                val hiddenRoomIds = beeperLabelsRepository.getHiddenRoomIds()
+                rooms.filter { room -> !hiddenRoomIds.contains(room.id) }
             }
             is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.NetworkSpace -> {
                 rooms.filter { room ->
-                    val net = room.beeperData?.network
+                    val net = room.beeperData?.network ?: beeperBridgeService.getNetworkForRoom(room.id)
                     net?.name?.equals(spaceId.networkKey, ignoreCase = true) == true
                 }
             }
@@ -476,10 +473,23 @@ class RoomListPresenter(
                     val totalUnreadMentions = siblingRooms.sumOf { it.numberOfUnreadMentions }
                     val totalUnreadNotifications = siblingRooms.sumOf { it.numberOfUnreadNotifications }
                     val hasMarkedUnread = siblingRooms.any { it.isMarkedUnread }
+
+                    val activeNet = primaryRoom.beeperData?.network ?: beeperBridgeService.getNetworkForRoom(primaryRoom.id)
+                    val unreadNets = siblingRooms.filter { it.numberOfUnreadMessages > 0 || it.isMarkedUnread }
+                        .mapNotNull { it.beeperData?.network ?: beeperBridgeService.getNetworkForRoom(it.id) }
+                        .distinct()
+                        .toImmutableList()
+
                     val allNetworks = contact.roomIds.mapNotNull { siblingId ->
                         beeperBridgeService.getNetworkForRoom(siblingId)
                             ?: siblingRooms.find { it.id == siblingId }?.beeperData?.network
-                    }.distinct().toImmutableList()
+                    }.distinct()
+
+                    val sortedAllNetworks = if (activeNet != null && allNetworks.contains(activeNet)) {
+                        (listOf(activeNet) + (allNetworks - activeNet)).toImmutableList()
+                    } else {
+                        allNetworks.toImmutableList()
+                    }
 
                     val mergedSummary = primaryRoom.copy(
                         name = contact.displayName.ifEmpty { primaryRoom.name },
@@ -489,7 +499,9 @@ class RoomListPresenter(
                         isMarkedUnread = hasMarkedUnread,
                         mergedContact = contact,
                         siblingRoomIds = contact.roomIds.filter { it != primaryRoom.id }.toImmutableList(),
-                        mergedNetworks = allNetworks,
+                        mergedNetworks = sortedAllNetworks,
+                        activeNetwork = activeNet,
+                        unreadNetworks = unreadNets,
                     )
                     result.add(mergedSummary)
                 }

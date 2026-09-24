@@ -25,6 +25,7 @@ import io.element.android.features.logout.api.direct.DirectLogoutState
 import io.element.android.features.rageshake.api.RageshakeFeatureAvailability
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
+import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.designsystem.utils.snackbar.collectSnackbarMessageAsState
 import io.element.android.libraries.indicator.api.IndicatorService
 import io.element.android.libraries.matrix.api.MatrixClient
@@ -48,6 +49,8 @@ class HomePresenter(
     private val sessionStore: SessionStore,
     private val virtualSpacesProvider: io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider,
     private val beeperLabelsRepository: io.element.android.features.beeperbridge.api.BeeperLabelsRepository,
+    private val beeperSyncService: io.element.android.features.beeperbridge.api.BeeperSyncService,
+    private val roomListDataSource: io.element.android.features.home.impl.datasource.RoomListDataSource? = null,
 ) : Presenter<HomeState> {
     private val currentUserWithNeighborsBuilder = CurrentUserWithNeighborsBuilder()
 
@@ -105,9 +108,23 @@ class HomePresenter(
                 is HomeEvent.SwitchToAccount -> coroutineState.launch {
                     sessionStore.setLatestSession(event.sessionId.value)
                 }
+                HomeEvent.TriggerSmartSync -> coroutineState.launch {
+                    val result = beeperSyncService.syncAll(backfillDays = 60)
+                    roomListDataSource?.loadAllRooms()
+                    result.onSuccess {
+                        snackbarDispatcher.post(
+                            SnackbarMessage(io.element.android.libraries.ui.strings.CommonStrings.common_success)
+                        )
+                    }.onFailure {
+                        snackbarDispatcher.post(
+                            SnackbarMessage(io.element.android.libraries.ui.strings.CommonStrings.common_error)
+                        )
+                    }
+                }
             }
         }
 
+        val beeperSyncState by beeperSyncService.syncState.collectAsState()
         val snackbarMessage by snackbarDispatcher.collectSnackbarMessageAsState()
         return HomeState(
             currentUserAndNeighbors = currentUserAndNeighbors,
@@ -122,6 +139,7 @@ class HomePresenter(
             snackbarMessage = snackbarMessage,
             canReportBug = canReportBug,
             directLogoutState = directLogoutState,
+            beeperSyncState = beeperSyncState,
             eventSink = ::handleEvent,
         )
     }

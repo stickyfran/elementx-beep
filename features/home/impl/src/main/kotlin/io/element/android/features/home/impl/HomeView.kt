@@ -227,6 +227,8 @@ private fun HomeScaffold(
                 filtersState = roomListState.filtersState,
                 spaceFiltersState = roomListState.spaceFiltersState,
                 canReportBug = state.canReportBug,
+                onSyncClick = { state.eventSink(HomeEvent.TriggerSmartSync) },
+                isSyncing = state.beeperSyncState is io.element.android.features.beeperbridge.api.BeeperSyncState.Syncing,
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
                     style = HazeMaterials.thick(),
