@@ -21,6 +21,7 @@ dependencies {
     implementation(projects.libraries.preferences.api)
     implementation(projects.libraries.network)
     implementation(projects.libraries.sessionStorage.api)
+    implementation(platform(libs.network.okhttp.bom))
     implementation(libs.network.okhttp)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.serialization.json)
