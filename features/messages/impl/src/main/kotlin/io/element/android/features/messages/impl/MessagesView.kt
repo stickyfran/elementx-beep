@@ -547,15 +547,6 @@ private fun MessagesViewContent(
                 Column(
                     modifier = Modifier.onSizeChanged { topBannersHeightDp = with(density) { it.height.toDp() } },
                 ) {
-                    if (state.timelineState.mergedChannels.size > 1) {
-                        MergedContactSwitcher(
-                            channels = state.timelineState.mergedChannels,
-                            currentRoomId = state.roomId.value,
-                            onSelectChannel = { channelRoomId ->
-                                state.timelineState.eventSink(TimelineEvent.SwitchMergedRoom(RoomId(channelRoomId)))
-                            },
-                        )
-                    }
                     AnimatedVisibility(
                         visible = state.pinnedMessagesBannerState is PinnedMessagesBannerState.Visible && scrollBehavior.isVisible,
                         enter = expandVertically(),
@@ -592,36 +583,47 @@ private fun MessagesViewComposerBottomSheetContents(
     onRoomSuccessorClick: (RoomId) -> Unit,
     onLinkClick: (String, Boolean) -> Unit,
 ) {
-    when {
-        state.successorRoom != null -> {
-            SuccessorRoomBanner(roomSuccessor = state.successorRoom, onRoomSuccessorClick = onRoomSuccessorClick)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (state.timelineState.mergedChannels.size > 1) {
+            MergedContactSwitcher(
+                channels = state.timelineState.mergedChannels,
+                currentRoomId = state.roomId.value,
+                onSelectChannel = { channelRoomId ->
+                    state.timelineState.eventSink(TimelineEvent.SwitchMergedRoom(RoomId(channelRoomId)))
+                },
+            )
         }
-        state.userEventPermissions.canSendMessage -> {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                // Do not show the identity change if user is composing a Rich message or is seeing suggestion(s).
-                if (state.composerState.suggestions.isEmpty() &&
-                    state.composerState.textEditorState is TextEditorState.Markdown) {
-                    IdentityChangeStateView(
-                        state = state.identityChangeState,
-                        onLinkClick = onLinkClick,
-                    )
-                }
-                val verificationViolation = state.identityChangeState.roomMemberIdentityStateChanges.firstOrNull {
-                    it.identityState == IdentityState.VerificationViolation
-                }
-                if (verificationViolation != null) {
-                    DisabledComposerView(modifier = Modifier.fillMaxWidth())
-                } else {
-                    MessageComposerView(
-                        state = state.composerState,
-                        voiceMessageState = state.voiceMessageComposerState,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+        when {
+            state.successorRoom != null -> {
+                SuccessorRoomBanner(roomSuccessor = state.successorRoom, onRoomSuccessorClick = onRoomSuccessorClick)
+            }
+            state.userEventPermissions.canSendMessage -> {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Do not show the identity change if user is composing a Rich message or is seeing suggestion(s).
+                    if (state.composerState.suggestions.isEmpty() &&
+                        state.composerState.textEditorState is TextEditorState.Markdown) {
+                        IdentityChangeStateView(
+                            state = state.identityChangeState,
+                            onLinkClick = onLinkClick,
+                        )
+                    }
+                    val verificationViolation = state.identityChangeState.roomMemberIdentityStateChanges.firstOrNull {
+                        it.identityState == IdentityState.VerificationViolation
+                    }
+                    if (verificationViolation != null) {
+                        DisabledComposerView(modifier = Modifier.fillMaxWidth())
+                    } else {
+                        MessageComposerView(
+                            state = state.composerState,
+                            voiceMessageState = state.voiceMessageComposerState,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
             }
-        }
-        else -> {
-            CantSendMessageBanner()
+            else -> {
+                CantSendMessageBanner()
+            }
         }
     }
 }

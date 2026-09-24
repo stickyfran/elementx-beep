@@ -145,7 +145,8 @@ class TimelinePresenter(
         val roomInfo by room.roomInfoFlow.collectAsState()
 
         val mergedContacts by beeperMergeRepository.mergedContactsFlow.collectAsState()
-        val mergedChannels = remember(mergedContacts, room.roomId) {
+        val cacheUpdates by beeperBridgeService.cacheUpdates.collectAsState(initial = "")
+        val mergedChannels = remember(mergedContacts, room.roomId, cacheUpdates) {
             val contact = mergedContacts.values.find { it.roomIds.contains(room.roomId.value) }
             if (contact == null || contact.roomIds.size <= 1) {
                 persistentListOf<MergedChannelItem>()
@@ -156,10 +157,22 @@ class TimelinePresenter(
                     MergedChannelItem(
                         roomId = siblingId,
                         network = network,
-                        displayName = network.displayName,
+                        displayName = if (network != BeeperNetwork.UNKNOWN) network.displayName else "Chat",
                         unreadCount = 0,
                     )
                 }.toImmutableList()
+            }
+        }
+
+        LaunchedEffect(mergedContacts, room.roomId) {
+            val contact = mergedContacts.values.find { it.roomIds.contains(room.roomId.value) }
+            if (contact != null) {
+                contact.roomIds.forEach { siblingId ->
+                    val currentNet = beeperBridgeService.getNetworkForRoom(siblingId)
+                    if (currentNet == null || currentNet == BeeperNetwork.UNKNOWN) {
+                        beeperBridgeService.refreshRoomData(siblingId)
+                    }
+                }
             }
         }
 

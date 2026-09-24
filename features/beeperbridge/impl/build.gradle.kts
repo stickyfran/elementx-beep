@@ -32,4 +32,5 @@ dependencies {
     testImplementation(projects.libraries.matrix.test)
     testImplementation(projects.libraries.sessionStorage.test)
     testImplementation(projects.libraries.preferences.test)
+    testImplementation("org.json:json:20240303")
 }

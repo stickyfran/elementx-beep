@@ -13,6 +13,7 @@ object BeeperNetworkMap {
     private val prefixMap = mapOf(
         "whatsapp" to BeeperNetwork.WHATSAPP,
         "whatsappgo" to BeeperNetwork.WHATSAPP,
+        "w4b" to BeeperNetwork.WHATSAPP,
         "instagram" to BeeperNetwork.INSTAGRAM,
         "instagramgo" to BeeperNetwork.INSTAGRAM,
         "telegram" to BeeperNetwork.TELEGRAM,
@@ -26,7 +27,8 @@ object BeeperNetworkMap {
         "slack" to BeeperNetwork.SLACK,
         "slackgo" to BeeperNetwork.SLACK,
         "googlechat" to BeeperNetwork.GOOGLECHAT,
-        "googlechatgo" to BeeperNetwork.GOOGLECHAT
+        "googlechatgo" to BeeperNetwork.GOOGLECHAT,
+        "gchat" to BeeperNetwork.GOOGLECHAT,
     )
 
     private val knownBridgeBots = setOf(
@@ -58,12 +60,25 @@ object BeeperNetworkMap {
     }
 
     fun detectNetwork(userId: String): BeeperNetwork? {
+        val domain = userId.substringAfter(":", "").lowercase()
         val localpart = userId.substringAfter("@").substringBefore(":").lowercase()
         val rawPrefix = localpart.replaceFirst(Regex("^_+"), "")
 
         for ((key, network) in prefixMap) {
             if (matchesNetworkPrefix(rawPrefix, key)) {
                 return network
+            }
+        }
+        for ((key, network) in prefixMap) {
+            if (rawPrefix.contains(key)) {
+                return network
+            }
+        }
+        if (domain.isNotEmpty()) {
+            for ((key, network) in prefixMap) {
+                if (domain.contains(key)) {
+                    return network
+                }
             }
         }
         return null

@@ -45,6 +45,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
 
     companion object {
         const val ACCOUNT_DATA_KEY = "com.beeper.merged_contacts"
+        const val FALLBACK_ACCOUNT_DATA_KEY = "m.fluffybeep.merges"
         private const val MILLIS_IN_SECOND = 1000L
     }
 
@@ -53,7 +54,9 @@ class DefaultBeeperMergeRepository @Inject constructor(
             try {
                 val cachedJson = dataStore.data.first()[contactsKey] ?: "{}"
                 val initialMap = parseContacts(cachedJson)
-                updateState(initialMap)
+                if (initialMap.isNotEmpty()) {
+                    updateState(initialMap)
+                }
             } catch (e: Exception) {
                 Timber.e(e, "BeeperMergeRepository: Failed to load cached merged contacts")
             }
@@ -135,9 +138,19 @@ class DefaultBeeperMergeRepository @Inject constructor(
 
     override suspend fun syncFromRemote(): Result<Unit> {
         return runCatchingExceptions {
-            val remoteJson = matrixAccountDataService.getAccountData(ACCOUNT_DATA_KEY).getOrNull()
-            if (remoteJson != null) {
-                val remoteContacts = parseContacts(remoteJson)
+            var remoteJson = matrixAccountDataService.getAccountData(ACCOUNT_DATA_KEY).getOrNull()
+            var remoteContacts = remoteJson?.let { parseContacts(it) }.orEmpty()
+            if (remoteContacts.isEmpty()) {
+                val fallbackJson = matrixAccountDataService.getAccountData(FALLBACK_ACCOUNT_DATA_KEY).getOrNull()
+                if (fallbackJson != null) {
+                    val fallbackContacts = parseContacts(fallbackJson)
+                    if (fallbackContacts.isNotEmpty()) {
+                        remoteContacts = fallbackContacts
+                        remoteJson = fallbackJson
+                    }
+                }
+            }
+            if (remoteContacts.isNotEmpty()) {
                 Timber.d("BeeperMergeRepository: Synced %d merged contacts from remote", remoteContacts.size)
                 dataStore.edit { prefs ->
                     prefs[contactsKey] = serializeContacts(remoteContacts)
@@ -155,9 +168,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
         dataStore.edit { prefs ->
             prefs[contactsKey] = jsonStr
         }
-        sessionCoroutineScope.launch {
-            matrixAccountDataService.setAccountData(ACCOUNT_DATA_KEY, jsonStr)
-        }
+        matrixAccountDataService.setAccountData(ACCOUNT_DATA_KEY, jsonStr)
     }
 
     private fun parseContacts(jsonStr: String): Map<String, MergedContact> {
@@ -165,39 +176,22 @@ class DefaultBeeperMergeRepository @Inject constructor(
         if (jsonStr.isBlank() || jsonStr.trim() == "{}") return result
         try {
             val root = JSONObject(jsonStr)
-            val keys = root.keys()
-            while (keys.hasNext()) {
-                val mergeId = keys.next()
-                val obj = root.optJSONObject(mergeId) ?: continue
 
-                val rawName = obj.optString("displayName", "")
-                val displayName = DisplayNameSanitizer.sanitize(rawName).ifEmpty { rawName }
-                val avatarMxc = obj.optString("avatarMxc").takeIf { it.isNotBlank() }
+            // Format 1: Beeper / FluffyBeep standard: { "contacts": { "<id>": { ... } } }
+            val contactsObj = root.optJSONObject("contacts")
+            if (contactsObj != null) {
+                parseContactsFromObject(contactsObj, result)
+            }
 
-                val roomIdsList = mutableListOf<String>()
-                val roomIdsArray = obj.optJSONArray("roomIds")
-                if (roomIdsArray != null) {
-                    for (i in 0 until roomIdsArray.length()) {
-                        val rId = roomIdsArray.optString(i)
-                        if (rId.isNotBlank()) roomIdsList.add(rId)
-                    }
-                }
+            // Format 2: Fallback array: { "merges": [ { "id": "...", ... } ] }
+            val mergesArray = root.optJSONArray("merges")
+            if (mergesArray != null && result.isEmpty()) {
+                parseContactsFromArray(mergesArray, result)
+            }
 
-                val phoneContactId = obj.optString("phoneContactId").takeIf { it.isNotBlank() }
-                val customWhatsAppPhone = obj.optString("customWhatsAppPhone").takeIf { it.isNotBlank() }
-                val customInstagramHandle = obj.optString("customInstagramHandle").takeIf { it.isNotBlank() }
-                val createdAt = obj.optLong("createdAt", System.currentTimeMillis() / MILLIS_IN_SECOND)
-
-                result[mergeId] = MergedContact(
-                    id = mergeId,
-                    displayName = displayName,
-                    avatarMxc = avatarMxc,
-                    roomIds = roomIdsList,
-                    phoneContactId = phoneContactId,
-                    customWhatsAppPhone = customWhatsAppPhone,
-                    customInstagramHandle = customInstagramHandle,
-                    createdAt = createdAt,
-                )
+            // Format 3: Flat dictionary: { "<id>": { "displayName": "...", "roomIds": [...] } }
+            if (result.isEmpty()) {
+                parseContactsFromObject(root, result)
             }
         } catch (e: Exception) {
             Timber.e(e, "BeeperMergeRepository: Error parsing merged contacts JSON")
@@ -205,8 +199,64 @@ class DefaultBeeperMergeRepository @Inject constructor(
         return result
     }
 
+    private fun parseContactsFromObject(objMap: JSONObject, result: MutableMap<String, MergedContact>) {
+        val keys = objMap.keys()
+        while (keys.hasNext()) {
+            val mergeId = keys.next()
+            if (mergeId == "contacts" || mergeId == "merges") continue
+            val obj = objMap.optJSONObject(mergeId) ?: continue
+            val contact = parseSingleContact(mergeId, obj) ?: continue
+            result[mergeId] = contact
+        }
+    }
+
+    private fun parseContactsFromArray(arr: JSONArray, result: MutableMap<String, MergedContact>) {
+        for (i in 0 until arr.length()) {
+            val obj = arr.optJSONObject(i) ?: continue
+            val mergeId = obj.optString("id").takeIf { it.isNotBlank() } ?: continue
+            val contact = parseSingleContact(mergeId, obj) ?: continue
+            result[mergeId] = contact
+        }
+    }
+
+    private fun parseSingleContact(mergeId: String, obj: JSONObject): MergedContact? {
+        val rawName = obj.optString("displayName", "")
+        val displayName = DisplayNameSanitizer.sanitize(rawName).ifEmpty { rawName }
+        val avatarMxc = obj.optString("avatarMxc").takeIf { it.isNotBlank() }
+
+        val roomIdsList = mutableListOf<String>()
+        val roomIdsArray = obj.optJSONArray("roomIds")
+        if (roomIdsArray != null) {
+            for (i in 0 until roomIdsArray.length()) {
+                val rId = roomIdsArray.optString(i)
+                if (rId.isNotBlank()) roomIdsList.add(rId)
+            }
+        }
+
+        if (roomIdsList.isEmpty() && displayName.isBlank()) {
+            return null
+        }
+
+        val phoneContactId = obj.optString("phoneContactId").takeIf { it.isNotBlank() }
+        val customWhatsAppPhone = obj.optString("customWhatsAppPhone").takeIf { it.isNotBlank() }
+        val customInstagramHandle = obj.optString("customInstagramHandle").takeIf { it.isNotBlank() }
+        val createdAt = obj.optLong("createdAt", System.currentTimeMillis() / MILLIS_IN_SECOND)
+
+        return MergedContact(
+            id = mergeId,
+            displayName = displayName,
+            avatarMxc = avatarMxc,
+            roomIds = roomIdsList,
+            phoneContactId = phoneContactId,
+            customWhatsAppPhone = customWhatsAppPhone,
+            customInstagramHandle = customInstagramHandle,
+            createdAt = createdAt,
+        )
+    }
+
     private fun serializeContacts(contacts: Map<String, MergedContact>): String {
         val root = JSONObject()
+        val contactsObj = JSONObject()
         for ((mergeId, contact) in contacts) {
             val obj = JSONObject()
             obj.put("displayName", contact.displayName)
@@ -218,8 +268,9 @@ class DefaultBeeperMergeRepository @Inject constructor(
             contact.customWhatsAppPhone?.let { obj.put("customWhatsAppPhone", it) }
             contact.customInstagramHandle?.let { obj.put("customInstagramHandle", it) }
             obj.put("createdAt", contact.createdAt)
-            root.put(mergeId, obj)
+            contactsObj.put(mergeId, obj)
         }
+        root.put("contacts", contactsObj)
         return root.toString()
     }
 }

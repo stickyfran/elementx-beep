@@ -41,7 +41,13 @@ class DefaultBeeperBridgeService @Inject constructor(
     }
 
     override fun getNetworkForRoom(roomId: String): BeeperNetwork? {
-        return cache[roomId]?.network
+        val cached = cache[roomId]?.network
+        if (cached != null && cached != BeeperNetwork.UNKNOWN) {
+            return cached
+        }
+        val heuristic = BeeperNetworkMap.detectNetworkFromIdentifier(roomId)
+        if (heuristic != null) return heuristic
+        return cached
     }
 
     override fun isFakeDm(roomId: String): Boolean {
@@ -61,27 +67,37 @@ class DefaultBeeperBridgeService @Inject constructor(
     }
 
     override suspend fun refreshRoomData(roomId: String) {
-        if (cache.containsKey(roomId)) return
+        val existing = cache[roomId]
+        if (existing != null && existing.network != BeeperNetwork.UNKNOWN) return
 
         try {
             matrixClient.getRoom(RoomId(roomId))?.use { room ->
                 val members = room.getMembers(limit = 10).getOrNull() ?: emptyList()
+                val roomInfo = room.info()
+                val roomName = roomInfo.rawName
 
-                // Use rawName instead of name, as name is a computed fallback by the SDK
-                // rawName maps to the actual m.room.name state event which is what the heuristic needs
-                val roomName = room.info().rawName
-
-                val membersList = members.map { member ->
-                    RoomMemberStub(
-                        userId = member.userId.value,
-                        isLocalUser = member.userId == matrixClient.sessionId,
-                        avatarUrl = member.avatarUrl,
-                        displayName = member.displayName
-                    )
+                val membersList = if (members.isNotEmpty()) {
+                    members.map { member ->
+                        RoomMemberStub(
+                            userId = member.userId.value,
+                            isLocalUser = member.userId == matrixClient.sessionId,
+                            avatarUrl = member.avatarUrl,
+                            displayName = member.displayName
+                        )
+                    }
+                } else {
+                    roomInfo.heroes.map { hero ->
+                        RoomMemberStub(
+                            userId = hero.userId.value,
+                            isLocalUser = hero.userId == matrixClient.sessionId,
+                            avatarUrl = hero.avatarUrl,
+                            displayName = hero.displayName
+                        )
+                    }
                 }
 
                 val result = bridgedDmDetector.analyze(
-                    roomName = roomName,
+                    roomName = roomName ?: roomInfo.name,
                     members = membersList
                 )
 
@@ -97,14 +113,28 @@ class DefaultBeeperBridgeService @Inject constructor(
                 val rawDisplayName = if (result.isFakeDm) {
                     membersList.find { it.userId == result.contactMxid }?.displayName
                         ?: roomName
-                        ?: room.info().name
+                        ?: roomInfo.name
                 } else {
-                    roomName ?: room.info().name
+                    roomName ?: roomInfo.name
                 }
                 val contactDisplayName = DisplayNameSanitizer.sanitize(rawDisplayName).takeIf { it.isNotBlank() }
                 val contactAvatarUrl = if (result.isFakeDm) membersList.find { it.userId == result.contactMxid }?.avatarUrl else null
 
                 var detectedNetwork = result.network
+                if (detectedNetwork == null) {
+                    val directMember = room.getDirectRoomMember()
+                    if (directMember != null) {
+                        detectedNetwork = BeeperNetworkMap.detectNetwork(directMember.userId.value)
+                    }
+                }
+                val alias = roomInfo.canonicalAlias
+                if (detectedNetwork == null && alias != null) {
+                    detectedNetwork = BeeperNetworkMap.detectNetworkFromIdentifier(alias.value)
+                }
+                val infoName = roomInfo.name
+                if (detectedNetwork == null && infoName != null) {
+                    detectedNetwork = BeeperNetworkMap.detectNetworkFromIdentifier(infoName)
+                }
                 if (detectedNetwork == null) {
                     detectedNetwork = BeeperNetworkMap.detectNetworkFromIdentifier(roomId)
                 }
