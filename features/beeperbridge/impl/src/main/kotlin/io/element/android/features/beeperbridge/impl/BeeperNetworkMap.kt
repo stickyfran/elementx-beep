@@ -62,15 +62,17 @@ object BeeperNetworkMap {
         val rawPrefix = localpart.replaceFirst(Regex("^_+"), "")
 
         for ((key, network) in prefixMap) {
-            if (rawPrefix.startsWith("${key}_") ||
-                rawPrefix == "${key}bot" ||
-                rawPrefix == "${key}gobot" ||
-                rawPrefix.startsWith(key)
-            ) {
+            if (matchesNetworkPrefix(rawPrefix, key)) {
                 return network
             }
         }
         return null
+    }
+
+    private fun matchesNetworkPrefix(rawPrefix: String, key: String): Boolean {
+        if (rawPrefix.startsWith("${key}_")) return true
+        if (rawPrefix == "${key}bot" || rawPrefix == "${key}gobot") return true
+        return rawPrefix.startsWith(key)
     }
 
     fun detectNetworkFromIdentifier(identifier: String): BeeperNetwork? {

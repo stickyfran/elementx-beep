@@ -45,6 +45,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
 
     companion object {
         const val ACCOUNT_DATA_KEY = "com.beeper.merged_contacts"
+        private const val MILLIS_IN_SECOND = 1000L
     }
 
     init {
@@ -185,7 +186,7 @@ class DefaultBeeperMergeRepository @Inject constructor(
                 val phoneContactId = obj.optString("phoneContactId").takeIf { it.isNotBlank() }
                 val customWhatsAppPhone = obj.optString("customWhatsAppPhone").takeIf { it.isNotBlank() }
                 val customInstagramHandle = obj.optString("customInstagramHandle").takeIf { it.isNotBlank() }
-                val createdAt = obj.optLong("createdAt", System.currentTimeMillis() / 1000)
+                val createdAt = obj.optLong("createdAt", System.currentTimeMillis() / MILLIS_IN_SECOND)
 
                 result[mergeId] = MergedContact(
                     id = mergeId,

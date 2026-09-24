@@ -68,9 +68,10 @@ class BridgedDmDetector @Inject constructor() {
         // - exactly 1 non-bot contact
         // - active non-local members <= 2 (i.e. total members <= 3 including local user)
         // - at least one contact identified
-        val isBridged1to1 = (nonBotOtherMembers == 1 && members.size <= 3 && contactMxid != null)
-        val isFakeDm = (botMxid != null && contactMxid != null && members.size <= 3) ||
-                       (isBridged1to1 && network != null)
+        val isBridged1to1 = nonBotOtherMembers == 1 && members.size <= 3 && contactMxid != null
+        val hasBotAndContact = botMxid != null && contactMxid != null && members.size <= 3
+        val isDirectBridged = isBridged1to1 && network != null
+        val isFakeDm = hasBotAndContact || isDirectBridged
 
         return BridgedDmResult(
             isFakeDm = isFakeDm,
