@@ -7,6 +7,7 @@
  */
 package io.element.android.features.beeperbridge.impl
 
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.zacsweers.metro.ContributesBinding
@@ -35,6 +36,7 @@ class DefaultBeeperLabelsRepository @Inject constructor(
     private val dataStore = preferenceDataStoreFactory.create("beeper_labels")
     private val labelsKey = stringPreferencesKey("labels_json")
     private val hiddenNetworksKey = stringPreferencesKey("hidden_networks_json")
+    private val showSpacesTabKey = booleanPreferencesKey("show_spaces_tab")
 
     companion object {
         const val ACCOUNT_DATA_KEY = "com.beeper.labels"
@@ -104,6 +106,18 @@ class DefaultBeeperLabelsRepository @Inject constructor(
             }
         }.onFailure {
             Timber.e(it, "BeeperLabelsRepository: Failed to sync labels from remote")
+        }
+    }
+
+    override fun isSpacesTabVisibleFlow(): Flow<Boolean> {
+        return dataStore.data.map { prefs ->
+            prefs[showSpacesTabKey] ?: false
+        }
+    }
+
+    override suspend fun setSpacesTabVisible(visible: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[showSpacesTabKey] = visible
         }
     }
 

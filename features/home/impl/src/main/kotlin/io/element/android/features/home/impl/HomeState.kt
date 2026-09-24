@@ -30,6 +30,7 @@ data class HomeState(
     val currentHomeNavigationBarItem: HomeNavigationBarItem,
     val selectedVirtualSpaceId: VirtualSpaceId = VirtualSpaceId.AllChats,
     val beeperLabels: ImmutableList<BeeperLabel> = persistentListOf(),
+    val showSpacesTab: Boolean = false,
     val roomListState: RoomListState,
     val homeSpacesState: HomeSpacesState,
     val snackbarMessage: SnackbarMessage?,

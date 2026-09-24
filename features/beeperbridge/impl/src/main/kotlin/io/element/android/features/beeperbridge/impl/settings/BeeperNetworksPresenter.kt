@@ -8,22 +8,38 @@
 package io.element.android.features.beeperbridge.impl.settings
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import dev.zacsweers.metro.Inject
+import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
 import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.libraries.architecture.Presenter
+import kotlinx.coroutines.launch
 
-class BeeperNetworksPresenter @Inject constructor() : Presenter<BeeperNetworksState> {
+class BeeperNetworksPresenter @Inject constructor(
+    private val beeperLabelsRepository: BeeperLabelsRepository,
+) : Presenter<BeeperNetworksState> {
     @Composable
     override fun present(): BeeperNetworksState {
-        // Return a dummy list of all available Beeper networks
         val networks = remember { BeeperNetwork.entries.toList() }
+        val showSpacesTab by beeperLabelsRepository.isSpacesTabVisibleFlow().collectAsState(initial = false)
+        val coroutineScope = rememberCoroutineScope()
 
         fun handleEvent(event: BeeperNetworksEvent) {
+            when (event) {
+                is BeeperNetworksEvent.ToggleShowSpacesTab -> {
+                    coroutineScope.launch {
+                        beeperLabelsRepository.setSpacesTabVisible(event.show)
+                    }
+                }
+            }
         }
 
         return BeeperNetworksState(
             networks = networks,
+            showSpacesTab = showSpacesTab,
             eventSink = ::handleEvent,
         )
     }

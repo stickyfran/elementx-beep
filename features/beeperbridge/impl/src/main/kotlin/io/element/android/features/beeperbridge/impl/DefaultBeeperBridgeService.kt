@@ -29,7 +29,7 @@ class DefaultBeeperBridgeService @Inject constructor(
 ) : BeeperBridgeService {
     private val cache = ConcurrentHashMap<String, BeeperRoomData>()
 
-    private val _cacheUpdates = MutableSharedFlow<String>(extraBufferCapacity = 64)
+    private val _cacheUpdates = MutableSharedFlow<String>(extraBufferCapacity = 512)
     override val cacheUpdates: Flow<String> = _cacheUpdates
 
     override fun isEnabled(): Boolean {

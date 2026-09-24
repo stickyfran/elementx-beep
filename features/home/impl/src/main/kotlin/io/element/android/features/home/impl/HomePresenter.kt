@@ -77,6 +77,7 @@ class HomePresenter(
         val beeperLabels = remember(beeperLabelsList) {
             beeperLabelsList.filter { it.isShownInInbox }.toImmutableList()
         }
+        val showSpacesTab by beeperLabelsRepository.isSpacesTabVisibleFlow().collectAsState(initial = false)
 
         LaunchedEffect(Unit) {
             // Force a refresh of the profile
@@ -98,6 +99,9 @@ class HomePresenter(
                         currentHomeNavigationBarItemOrdinal = HomeNavigationBarItem.Chats.ordinal
                     }
                 }
+                is HomeEvent.SetShowSpacesTab -> coroutineState.launch {
+                    beeperLabelsRepository.setSpacesTabVisible(event.show)
+                }
                 is HomeEvent.SwitchToAccount -> coroutineState.launch {
                     sessionStore.setLatestSession(event.sessionId.value)
                 }
@@ -112,6 +116,7 @@ class HomePresenter(
             currentHomeNavigationBarItem = currentHomeNavigationBarItem,
             selectedVirtualSpaceId = selectedVirtualSpaceId,
             beeperLabels = beeperLabels,
+            showSpacesTab = showSpacesTab,
             roomListState = roomListState,
             homeSpacesState = homeSpacesState,
             snackbarMessage = snackbarMessage,

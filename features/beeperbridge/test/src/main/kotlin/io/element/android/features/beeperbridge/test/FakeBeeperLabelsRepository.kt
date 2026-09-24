@@ -35,7 +35,15 @@ class FakeBeeperLabelsRepository : BeeperLabelsRepository {
         hiddenNetworks = networks
     }
 
+    private val spacesTabVisibleFlow = MutableStateFlow(false)
+
     override suspend fun syncFromRemote(): Result<Unit> = Result.success(Unit)
+
+    override fun isSpacesTabVisibleFlow(): Flow<Boolean> = spacesTabVisibleFlow.asStateFlow()
+
+    override suspend fun setSpacesTabVisible(visible: Boolean) {
+        spacesTabVisibleFlow.value = visible
+    }
 
     fun emitLabels(labels: List<BeeperLabel>) {
         labelsFlow.value = labels

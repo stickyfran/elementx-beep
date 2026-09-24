@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
+import io.element.android.libraries.designsystem.components.preferences.PreferenceSwitch
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
@@ -27,6 +28,12 @@ fun BeeperNetworksView(
         onBackClick = onBackClick,
         title = "Beeper Networks",
     ) {
+        PreferenceSwitch(
+            title = "Mostrar pestaña de Espacios",
+            subtitle = "Muestra el botón de Espacios en la barra flotante inferior",
+            isChecked = state.showSpacesTab,
+            onCheckedChange = { state.eventSink(BeeperNetworksEvent.ToggleShowSpacesTab(it)) },
+        )
         state.networks.forEach { network ->
             ListItem(
                 headlineContent = { Text(network.displayName) },

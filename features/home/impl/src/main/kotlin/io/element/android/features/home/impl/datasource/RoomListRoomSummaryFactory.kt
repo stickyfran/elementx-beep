@@ -10,6 +10,8 @@ package io.element.android.features.home.impl.datasource
 
 import dev.zacsweers.metro.Inject
 import io.element.android.features.beeperbridge.api.BeeperBridgeService
+import io.element.android.features.beeperbridge.api.BeeperNetwork
+import io.element.android.features.beeperbridge.api.BeeperRoomData
 import io.element.android.features.beeperbridge.api.DisplayNameSanitizer
 import io.element.android.features.home.impl.model.LatestEvent
 import io.element.android.features.home.impl.model.RoomListRoomSummary
@@ -43,6 +45,20 @@ class RoomListRoomSummaryFactory(
         var beeperData = beeperBridgeService.getRoomData(roomSummary.roomId.value)
 
         if (beeperData == null) {
+            val quickNetwork = roomInfo.heroes.firstNotNullOfOrNull { hero ->
+                beeperBridgeService.getNetworkForRoom(hero.userId.value)
+            } ?: beeperBridgeService.getNetworkForRoom(roomSummary.roomId.value)
+              ?: roomInfo.canonicalAlias?.let { beeperBridgeService.getNetworkForRoom(it.value) }
+
+            if (quickNetwork != null && quickNetwork != BeeperNetwork.UNKNOWN) {
+                beeperData = BeeperRoomData(
+                    network = quickNetwork,
+                    isFakeDm = false,
+                    networkKey = quickNetwork.name.lowercase(),
+                    fromCache = true,
+                )
+            }
+
             sessionCoroutineScope.launch {
                 beeperBridgeService.refreshRoomData(roomSummary.roomId.value)
             }

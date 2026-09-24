@@ -9,7 +9,7 @@ package io.element.android.features.beeperbridge.api
 
 data class BeeperRoomData(
     val network: BeeperNetwork,
-    val isFakeDm: Boolean,
+    val isFakeDm: Boolean = false,
     val botMxid: String? = null,
     val realContactMxid: String? = null,
     val overrideDisplayName: String? = null,

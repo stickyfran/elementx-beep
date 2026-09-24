@@ -298,14 +298,16 @@ class RoomListPresenter(
     ): RoomListContentState {
         val selectedSpace by virtualSpacesProvider.getSelectedSpace().collectAsState()
         val mergedContacts by beeperMergeRepository.mergedContactsFlow.collectAsState()
+        val beeperLabels by beeperLabelsRepository.getLabelsFlow().collectAsState(initial = emptyList())
 
         val roomSummaries by produceState(
             initialValue = AsyncData.Loading(),
             key1 = selectedSpace,
             key2 = mergedContacts,
+            key3 = beeperLabels,
         ) {
             roomListDataSource.roomSummariesFlow.collect { summaries ->
-                val filtered = filterRoomsForSpace(summaries, selectedSpace)
+                val filtered = filterRoomsForSpace(summaries, selectedSpace, beeperLabels)
                 val merged = mergeRoomsForContacts(filtered, mergedContacts)
                 value = AsyncData.Success(merged)
             }
@@ -402,7 +404,8 @@ class RoomListPresenter(
 
     private suspend fun filterRoomsForSpace(
         rooms: List<RoomListRoomSummary>,
-        spaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId
+        spaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId,
+        labels: List<io.element.android.features.beeperbridge.api.BeeperLabel>,
     ): List<RoomListRoomSummary> {
         timber.log.Timber.d("BeeperBridge: filterRoomsForSpace IN with ${rooms.size} rooms, spaceId: ${spaceId.javaClass.simpleName}")
         val result = when (spaceId) {
@@ -410,19 +413,24 @@ class RoomListPresenter(
                 val hiddenNetworks = beeperLabelsRepository.getHiddenNetworks()
                 rooms.filter { room ->
                     val network = room.beeperData?.network
-                    network == null || !hiddenNetworks.contains(network.name)
+                    network == null || (!hiddenNetworks.contains(network.name) && !hiddenNetworks.contains(network.name.lowercase()))
                 }
             }
             is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.NetworkSpace -> {
                 rooms.filter { room ->
-                    room.beeperData?.network?.name == spaceId.networkKey
+                    val net = room.beeperData?.network
+                    net?.name?.equals(spaceId.networkKey, ignoreCase = true) == true
                 }
             }
             is io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId.LabelSpace -> {
-                val labels = beeperLabelsRepository.getLabels()
                 val label = labels.find { it.id == spaceId.labelId }
                 if (label != null) {
-                    rooms.filter { label.roomIds.contains(it.id) }
+                    val mergedContactsMap = beeperMergeRepository.getMergedContacts()
+                    rooms.filter { room ->
+                        if (label.roomIds.contains(room.id)) return@filter true
+                        val contact = mergedContactsMap.values.find { it.roomIds.contains(room.id) }
+                        contact != null && contact.roomIds.any { label.roomIds.contains(it) }
+                    }
                 } else {
                     emptyList()
                 }

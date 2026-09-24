@@ -11,5 +11,6 @@ import io.element.android.features.beeperbridge.api.BeeperNetwork
 
 data class BeeperNetworksState(
     val networks: List<BeeperNetwork>,
+    val showSpacesTab: Boolean = false,
     val eventSink: (BeeperNetworksEvent) -> Unit,
 )

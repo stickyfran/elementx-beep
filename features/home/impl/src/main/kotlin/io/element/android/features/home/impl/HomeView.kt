@@ -258,6 +258,7 @@ private fun HomeScaffold(
                         state.eventSink(HomeEvent.SelectHomeNavigationBarItem(item))
                     }
                 },
+                showSpacesTab = state.showSpacesTab,
                 onSelectVirtualSpace = { spaceId ->
                     state.eventSink(HomeEvent.SelectVirtualSpace(spaceId))
                 },
@@ -361,6 +362,7 @@ private fun HomeBottomBar(
     currentHomeNavigationBarItem: HomeNavigationBarItem,
     selectedVirtualSpaceId: io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId,
     beeperLabels: kotlinx.collections.immutable.ImmutableList<io.element.android.features.beeperbridge.api.BeeperLabel>,
+    showSpacesTab: Boolean,
     onItemClick: (HomeNavigationBarItem) -> Unit,
     onSelectVirtualSpace: (io.element.android.features.beeperbridge.api.spaces.VirtualSpaceId) -> Unit,
     modifier: Modifier = Modifier,
@@ -383,14 +385,16 @@ private fun HomeBottomBar(
             },
         )
 
-        HorizontalFloatingToolbarSeparator()
-        val isSpacesSelected = currentHomeNavigationBarItem == HomeNavigationBarItem.Spaces
-        HorizontalFloatingToolbarItem(
-            icon = HomeNavigationBarItem.Spaces.icon(isSpacesSelected),
-            tooltipLabel = stringResource(HomeNavigationBarItem.Spaces.labelRes),
-            isSelected = isSpacesSelected,
-            onClick = { onItemClick(HomeNavigationBarItem.Spaces) },
-        )
+        if (showSpacesTab) {
+            HorizontalFloatingToolbarSeparator()
+            val isSpacesSelected = currentHomeNavigationBarItem == HomeNavigationBarItem.Spaces
+            HorizontalFloatingToolbarItem(
+                icon = HomeNavigationBarItem.Spaces.icon(isSpacesSelected),
+                tooltipLabel = stringResource(HomeNavigationBarItem.Spaces.labelRes),
+                isSelected = isSpacesSelected,
+                onClick = { onItemClick(HomeNavigationBarItem.Spaces) },
+            )
+        }
 
         beeperLabels.forEach { label ->
             HorizontalFloatingToolbarSeparator()

@@ -45,10 +45,10 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 
-private const val PAGE_SIZE = 20
-private const val EXTENDED_VISIBILITY_RANGE_SIZE = 40
+private const val PAGE_SIZE = 250
+private const val EXTENDED_VISIBILITY_RANGE_SIZE = 100
 private const val SUBSCRIBE_TO_VISIBLE_ROOMS_DEBOUNCE_IN_MILLIS = 300L
-private const val PAGINATION_THRESHOLD = 3 * PAGE_SIZE
+private const val PAGINATION_THRESHOLD = 500
 
 @Inject
 @SingleIn(SessionScope::class)
@@ -88,8 +88,8 @@ class RoomListDataSource(
 
     fun loadAllRooms() {
         sessionCoroutineScope.launch {
-            timber.log.Timber.d("BeeperBridge: Force loading all rooms (0..1000)")
-            updateVisibleRange(0..1000)
+            timber.log.Timber.d("BeeperBridge: Force loading all rooms (0..500)")
+            updateVisibleRange(0..500)
         }
     }
 
@@ -108,8 +108,9 @@ class RoomListDataSource(
     }
 
     suspend fun updateVisibleRange(visibleRange: IntRange) = coroutineScope {
+        val fullRange = 0..maxOf(visibleRange.last + EXTENDED_VISIBILITY_RANGE_SIZE, 250)
         launch {
-            roomList.updateVisibleRange(visibleRange, PAGINATION_THRESHOLD)
+            roomList.updateVisibleRange(fullRange, PAGINATION_THRESHOLD)
         }
         launch {
             subscribeToVisibleRoomsIfNeeded(visibleRange)
@@ -156,8 +157,10 @@ class RoomListDataSource(
             .launchIn(sessionCoroutineScope)
     }
 
+    @OptIn(FlowPreview::class)
     private fun observeBeeperBridgeUpdates() {
         beeperBridgeService.cacheUpdates
+            .debounce(0.3.seconds)
             .onEach {
                 rebuildAllRoomSummaries()
             }
