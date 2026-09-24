@@ -46,6 +46,11 @@ data class TimelineState(
     val hasAnyEvent = lastTimelineEvent != null
     val focusedEventId = focusRequestState.eventId()
 
+    val canShowManualReadBottom: Boolean get() {
+        val hasPendingUnread = hasUnreadMessages || jumpToUnread != JumpToUnreadState.Hidden
+        return isManualReadReceiptsEnabled && isShowManualReadBottomEnabled && hasPendingUnread
+    }
+
     fun isLastOutgoingMessage(uniqueId: UniqueId): Boolean {
         return isLive && lastTimelineEvent != null && lastTimelineEvent.isMine && lastTimelineEvent.id == uniqueId
     }

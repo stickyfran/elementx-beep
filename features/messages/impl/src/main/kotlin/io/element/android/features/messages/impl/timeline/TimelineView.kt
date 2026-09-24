@@ -201,7 +201,7 @@ fun TimelineView(
                 reverseLayout = true,
                 contentPadding = PaddingValues(top = 64.dp, bottom = 8.dp),
             ) {
-                if (state.isManualReadReceiptsEnabled && state.isShowManualReadBottomEnabled && (state.hasUnreadMessages || state.jumpToUnread != JumpToUnreadState.Hidden)) {
+                if (state.canShowManualReadBottom) {
                     item(key = "manual_read_bottom_item") {
                         ManualReadBottomButton(
                             onClick = ::onMarkAllAsRead,

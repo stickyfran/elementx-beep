@@ -35,7 +35,6 @@ class DefaultBeeperMergeRepository @Inject constructor(
     preferenceDataStoreFactory: PreferenceDataStoreFactory,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
 ) : BeeperMergeRepository {
-
     private val dataStore = preferenceDataStoreFactory.create("beeper_merged_contacts")
     private val contactsKey = stringPreferencesKey("merged_contacts_json")
 
