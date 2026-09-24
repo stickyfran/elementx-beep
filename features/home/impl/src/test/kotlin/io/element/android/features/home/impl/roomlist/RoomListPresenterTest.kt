@@ -13,8 +13,10 @@ import im.vector.app.features.analytics.plan.Interaction
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
+import io.element.android.features.beeperbridge.api.BeeperMergeRepository
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
 import io.element.android.features.beeperbridge.test.FakeBeeperLabelsRepository
+import io.element.android.features.beeperbridge.test.FakeBeeperMergeRepository
 import io.element.android.features.beeperbridge.test.FakeVirtualSpacesProvider
 import io.element.android.features.home.impl.FakeDateTimeObserver
 import io.element.android.features.home.impl.datasource.RoomListDataSource
@@ -233,6 +235,7 @@ class RoomListPresenterTest {
                             isDm = false,
                             isFavorite = false,
                             hasNewContent = false,
+                            isMerged = false,
                         )
                     )
             }
@@ -249,6 +252,7 @@ class RoomListPresenterTest {
                             isDm = false,
                             isFavorite = true,
                             hasNewContent = false,
+                            isMerged = false,
                         )
                     )
             }
@@ -276,6 +280,7 @@ class RoomListPresenterTest {
                         isDm = false,
                         isFavorite = false,
                         hasNewContent = false,
+                        isMerged = false,
                     )
                 )
 
@@ -670,6 +675,7 @@ class RoomListPresenterTest {
         markRoomAsRead: MarkRoomAsRead? = null,
         virtualSpacesProvider: VirtualSpacesProvider = FakeVirtualSpacesProvider(),
         beeperLabelsRepository: BeeperLabelsRepository = FakeBeeperLabelsRepository(),
+        beeperMergeRepository: BeeperMergeRepository = FakeBeeperMergeRepository(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -703,5 +709,6 @@ class RoomListPresenterTest {
         featureFlagService = featureFlagService,
         virtualSpacesProvider = virtualSpacesProvider,
         beeperLabelsRepository = beeperLabelsRepository,
+        beeperMergeRepository = beeperMergeRepository,
     )
 }

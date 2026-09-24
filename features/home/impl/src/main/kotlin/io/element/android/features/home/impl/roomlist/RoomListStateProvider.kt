@@ -59,6 +59,7 @@ internal fun aRoomListState(
     acceptDeclineInviteState: AcceptDeclineInviteState = anAcceptDeclineInviteState(),
     hideInvitesAvatars: Boolean = false,
     canReportRoom: Boolean = true,
+    mergePickerMenu: RoomListState.MergePickerMenu = RoomListState.MergePickerMenu.Hidden,
     eventSink: (RoomListEvent) -> Unit = {}
 ) = RoomListState(
     contextMenu = contextMenu,
@@ -71,6 +72,7 @@ internal fun aRoomListState(
     acceptDeclineInviteState = acceptDeclineInviteState,
     hideInvitesAvatars = hideInvitesAvatars,
     canReportRoom = canReportRoom,
+    mergePickerMenu = mergePickerMenu,
     eventSink = eventSink,
 )
 

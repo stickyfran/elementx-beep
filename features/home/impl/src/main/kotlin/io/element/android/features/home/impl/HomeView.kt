@@ -110,6 +110,24 @@ fun HomeView(
                 onDeclineAndBlockClick = onDeclineInviteAndBlockUser,
             )
         }
+        if (state.mergePickerMenu is RoomListState.MergePickerMenu.Shown) {
+            io.element.android.features.home.impl.components.MergeContactPickerBottomSheet(
+                state = state.mergePickerMenu,
+                onDismiss = { state.eventSink(RoomListEvent.HideMergePicker) },
+                onMergeSelected = { siblingRoomId, contactName ->
+                    state.eventSink(
+                        RoomListEvent.PerformMerge(
+                            targetRoomId = state.mergePickerMenu.primaryRoomId,
+                            siblingRoomId = siblingRoomId,
+                            displayName = contactName,
+                        )
+                    )
+                },
+                onUnmergeRoom = { roomId ->
+                    state.eventSink(RoomListEvent.UnmergeRoom(roomId))
+                },
+            )
+        }
 
         leaveRoomView()
 

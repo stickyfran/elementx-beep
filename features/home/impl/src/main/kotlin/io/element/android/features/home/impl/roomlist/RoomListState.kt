@@ -9,6 +9,7 @@
 package io.element.android.features.home.impl.roomlist
 
 import androidx.compose.runtime.Immutable
+import io.element.android.features.beeperbridge.api.MergedContact
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.search.RoomListSearchState
@@ -32,6 +33,7 @@ data class RoomListState(
     val acceptDeclineInviteState: AcceptDeclineInviteState,
     val hideInvitesAvatars: Boolean,
     val canReportRoom: Boolean,
+    val mergePickerMenu: MergePickerMenu,
     val eventSink: (RoomListEvent) -> Unit,
 ) {
     val displayFilters = contentState is RoomListContentState.Rooms
@@ -44,12 +46,23 @@ data class RoomListState(
             val isDm: Boolean,
             val isFavorite: Boolean,
             val hasNewContent: Boolean,
+            val isMerged: Boolean,
         ) : ContextMenu
     }
 
     sealed interface DeclineInviteMenu {
         data object Hidden : DeclineInviteMenu
         data class Shown(val roomSummary: RoomListRoomSummary) : DeclineInviteMenu
+    }
+
+    sealed interface MergePickerMenu {
+        data object Hidden : MergePickerMenu
+        data class Shown(
+            val primaryRoomId: RoomId,
+            val primaryRoomName: String,
+            val existingMergedContact: MergedContact?,
+            val candidateRooms: ImmutableList<RoomListRoomSummary>,
+        ) : MergePickerMenu
     }
 }
 

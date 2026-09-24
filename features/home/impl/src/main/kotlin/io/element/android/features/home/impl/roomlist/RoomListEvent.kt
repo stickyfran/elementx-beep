@@ -24,6 +24,10 @@ sealed interface RoomListEvent {
     data class ShowDeclineInviteMenu(val roomSummary: RoomListRoomSummary) : RoomListEvent
     data object HideDeclineInviteMenu : RoomListEvent
 
+    data object HideMergePicker : RoomListEvent
+    data class PerformMerge(val targetRoomId: RoomId, val siblingRoomId: RoomId, val displayName: String) : RoomListEvent
+    data class UnmergeRoom(val roomId: RoomId) : RoomListEvent
+
     sealed interface ContextMenuEvent : RoomListEvent
     data object HideContextMenu : ContextMenuEvent
     data class LeaveRoom(val roomId: RoomId, val needsConfirmation: Boolean) : ContextMenuEvent
@@ -31,4 +35,5 @@ sealed interface RoomListEvent {
     data class MarkAsUnread(val roomId: RoomId) : ContextMenuEvent
     data class MarkAsReadFromBadge(val roomId: RoomId) : RoomListEvent
     data class SetRoomIsFavorite(val roomId: RoomId, val isFavorite: Boolean) : ContextMenuEvent
+    data class ShowMergePicker(val roomId: RoomId) : ContextMenuEvent
 }

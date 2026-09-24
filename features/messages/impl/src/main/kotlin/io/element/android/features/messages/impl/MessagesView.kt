@@ -57,6 +57,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.features.beeperbridge.api.components.MergedContactSwitcher
 import io.element.android.features.location.api.LiveLocationSharingBanner
 import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerEvent
 import io.element.android.features.messages.impl.actionlist.ActionListEvent
@@ -546,6 +547,15 @@ private fun MessagesViewContent(
                 Column(
                     modifier = Modifier.onSizeChanged { topBannersHeightDp = with(density) { it.height.toDp() } },
                 ) {
+                    if (state.timelineState.mergedChannels.size > 1) {
+                        MergedContactSwitcher(
+                            channels = state.timelineState.mergedChannels,
+                            currentRoomId = state.roomId.value,
+                            onSelectChannel = { channelRoomId ->
+                                state.timelineState.eventSink(TimelineEvent.SwitchMergedRoom(RoomId(channelRoomId)))
+                            },
+                        )
+                    }
                     AnimatedVisibility(
                         visible = state.pinnedMessagesBannerState is PinnedMessagesBannerState.Visible && scrollBehavior.isVisible,
                         enter = expandVertically(),

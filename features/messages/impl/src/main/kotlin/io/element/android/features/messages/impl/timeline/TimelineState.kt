@@ -9,6 +9,7 @@
 package io.element.android.features.messages.impl.timeline
 
 import androidx.compose.runtime.Immutable
+import io.element.android.features.beeperbridge.api.components.MergedChannelItem
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.ResolveVerifiedUserSendFailureState
 import io.element.android.features.messages.impl.timeline.components.MessageShieldData
 import io.element.android.features.messages.impl.timeline.model.NewEventState
@@ -40,6 +41,7 @@ data class TimelineState(
     val isShowManualReadBannerEnabled: Boolean,
     val isShowManualReadBottomEnabled: Boolean,
     val isShowManualReadInputBarEnabled: Boolean,
+    val mergedChannels: ImmutableList<MergedChannelItem>,
     val eventSink: (TimelineEvent) -> Unit,
 ) {
     private val lastTimelineEvent = timelineItems.firstOrNull { it is TimelineItem.Event } as? TimelineItem.Event

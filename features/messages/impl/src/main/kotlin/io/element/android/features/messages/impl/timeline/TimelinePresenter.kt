@@ -23,6 +23,11 @@ import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import io.element.android.features.beeperbridge.api.BeeperBridgeService
+import io.element.android.features.beeperbridge.api.BeeperMergeRepository
+import io.element.android.features.beeperbridge.api.BeeperNetwork
+import io.element.android.features.beeperbridge.api.BeeperNetworkMap
+import io.element.android.features.beeperbridge.api.components.MergedChannelItem
 import io.element.android.features.location.api.live.ActiveLiveLocationShareManager
 import io.element.android.features.messages.impl.MessagesNavigator
 import io.element.android.features.messages.impl.UserEventPermissions
@@ -102,6 +107,8 @@ class TimelinePresenter(
     private val liveLocationShareManager: ActiveLiveLocationShareManager,
     private val markAsFullyRead: MarkAsFullyRead,
     private val timelineProtectionPresenter: Presenter<TimelineProtectionState>,
+    private val beeperMergeRepository: BeeperMergeRepository,
+    private val beeperBridgeService: BeeperBridgeService,
 ) : Presenter<TimelineState> {
     private val tag = "TimelinePresenter"
 
@@ -137,6 +144,26 @@ class TimelinePresenter(
         val lastReadReceiptId = rememberSaveable { mutableStateOf<EventId?>(null) }
 
         val roomInfo by room.roomInfoFlow.collectAsState()
+
+        val mergedContacts by beeperMergeRepository.mergedContactsFlow.collectAsState()
+        val mergedChannels = remember(mergedContacts, room.roomId) {
+            val contact = mergedContacts.values.find { it.roomIds.contains(room.roomId.value) }
+            if (contact == null || contact.roomIds.size <= 1) {
+                persistentListOf<MergedChannelItem>()
+            } else {
+                contact.roomIds.map { siblingId ->
+                    val network = beeperBridgeService.getNetworkForRoom(siblingId)
+                        ?: BeeperNetworkMap.detectNetworkFromIdentifier(siblingId)
+                        ?: BeeperNetwork.UNKNOWN
+                    MergedChannelItem(
+                        roomId = siblingId,
+                        network = network,
+                        displayName = network.displayName,
+                        unreadCount = 0,
+                    )
+                }.toImmutableList()
+            }
+        }
 
         val prevMostRecentItemId = rememberSaveable { mutableStateOf<UniqueId?>(null) }
 
@@ -265,6 +292,10 @@ class TimelinePresenter(
                 }
                 is TimelineEvent.NavigateToPredecessorOrSuccessorRoom -> {
                     // Navigate to the predecessor or successor room
+                    val serverNames = calculateServerNamesForRoom(room)
+                    navigator.navigateToRoom(event.roomId, null, serverNames)
+                }
+                is TimelineEvent.SwitchMergedRoom -> {
                     val serverNames = calculateServerNamesForRoom(room)
                     navigator.navigateToRoom(event.roomId, null, serverNames)
                 }
@@ -432,6 +463,7 @@ class TimelinePresenter(
             isShowManualReadBannerEnabled = isShowManualReadBannerEnabled,
             isShowManualReadBottomEnabled = isShowManualReadBottomEnabled,
             isShowManualReadInputBarEnabled = isShowManualReadInputBarEnabled,
+            mergedChannels = mergedChannels,
             eventSink = ::handleEvent,
         )
     }

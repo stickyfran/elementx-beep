@@ -54,6 +54,7 @@ import androidx.compose.ui.zIndex
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.beeperbridge.api.components.BeeperNetworkBadge
+import io.element.android.features.beeperbridge.api.components.BeeperStackedNetworkBadges
 import io.element.android.features.home.impl.R
 import io.element.android.features.home.impl.model.LatestEvent
 import io.element.android.features.home.impl.model.RoomListRoomSummary
@@ -224,12 +225,19 @@ private fun RoomSummaryScaffoldRow(
                 },
                 hideImage = hideAvatarImage,
             )
-            val network = room.beeperData?.network
-            if (network != null) {
-                BeeperNetworkBadge(
-                    network = network,
+            if (room.mergedNetworks.isNotEmpty()) {
+                BeeperStackedNetworkBadges(
+                    networks = room.mergedNetworks,
                     modifier = Modifier.align(Alignment.BottomEnd)
                 )
+            } else {
+                val network = room.beeperData?.network
+                if (network != null) {
+                    BeeperNetworkBadge(
+                        network = network,
+                        modifier = Modifier.align(Alignment.BottomEnd)
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.width(16.dp))

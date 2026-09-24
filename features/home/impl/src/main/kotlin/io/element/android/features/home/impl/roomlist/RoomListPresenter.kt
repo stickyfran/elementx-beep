@@ -27,6 +27,10 @@ import dev.zacsweers.metro.Inject
 import im.vector.app.features.analytics.plan.Interaction
 import io.element.android.features.announcement.api.Announcement
 import io.element.android.features.announcement.api.AnnouncementService
+import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
+import io.element.android.features.beeperbridge.api.BeeperMergeRepository
+import io.element.android.features.beeperbridge.api.MergedContact
+import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
 import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.into
@@ -87,8 +91,9 @@ class RoomListPresenter(
     private val coldStartWatcher: AnalyticsColdStartWatcher,
     private val spaceFiltersPresenter: Presenter<SpaceFiltersState>,
     private val featureFlagService: FeatureFlagService,
-    private val virtualSpacesProvider: io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider,
-    private val beeperLabelsRepository: io.element.android.features.beeperbridge.api.BeeperLabelsRepository,
+    private val virtualSpacesProvider: VirtualSpacesProvider,
+    private val beeperLabelsRepository: BeeperLabelsRepository,
+    private val beeperMergeRepository: BeeperMergeRepository,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -117,6 +122,7 @@ class RoomListPresenter(
 
         val contextMenu = remember { mutableStateOf<RoomListState.ContextMenu>(RoomListState.ContextMenu.Hidden) }
         val declineInviteMenu = remember { mutableStateOf<RoomListState.DeclineInviteMenu>(RoomListState.DeclineInviteMenu.Hidden) }
+        val mergePickerMenu = remember { mutableStateOf<RoomListState.MergePickerMenu>(RoomListState.MergePickerMenu.Hidden) }
 
         fun handleEvent(event: RoomListEvent) {
             when (event) {
@@ -156,6 +162,61 @@ class RoomListPresenter(
                 }
                 is RoomListEvent.ShowDeclineInviteMenu -> declineInviteMenu.value = RoomListState.DeclineInviteMenu.Shown(event.roomSummary)
                 RoomListEvent.HideDeclineInviteMenu -> declineInviteMenu.value = RoomListState.DeclineInviteMenu.Hidden
+                is RoomListEvent.ShowMergePicker -> {
+                    coroutineScope.launch {
+                        val currentRooms = roomListDataSource.roomSummariesFlow.first()
+                        val primaryRoom = currentRooms.find { it.id == event.roomId.value }
+                        val primaryName = primaryRoom?.name ?: "Chat"
+                        val existingContact = beeperMergeRepository.getMergeForRoom(event.roomId.value)
+                        val candidates = currentRooms.filter { it.isDm && it.id != event.roomId.value }.toImmutableList()
+                        mergePickerMenu.value = RoomListState.MergePickerMenu.Shown(
+                            primaryRoomId = event.roomId,
+                            primaryRoomName = primaryName,
+                            existingMergedContact = existingContact,
+                            candidateRooms = candidates,
+                        )
+                    }
+                }
+                RoomListEvent.HideMergePicker -> {
+                    mergePickerMenu.value = RoomListState.MergePickerMenu.Hidden
+                }
+                is RoomListEvent.PerformMerge -> {
+                    coroutineScope.launch {
+                        val targetId = event.targetRoomId.value
+                        val siblingId = event.siblingRoomId.value
+                        val existing = beeperMergeRepository.getMergeForRoom(targetId)
+                            ?: beeperMergeRepository.getMergeForRoom(siblingId)
+                        if (existing != null) {
+                            beeperMergeRepository.addRoomToMerge(existing.id, siblingId)
+                            if (!existing.roomIds.contains(targetId)) {
+                                beeperMergeRepository.addRoomToMerge(existing.id, targetId)
+                            }
+                        } else {
+                            val newContact = MergedContact(
+                                id = java.util.UUID.randomUUID().toString(),
+                                displayName = event.displayName.ifEmpty { "Contacto" },
+                                roomIds = listOf(targetId, siblingId),
+                                createdAt = System.currentTimeMillis()
+                            )
+                            beeperMergeRepository.saveMergedContact(newContact)
+                        }
+                        mergePickerMenu.value = RoomListState.MergePickerMenu.Hidden
+                    }
+                }
+                is RoomListEvent.UnmergeRoom -> {
+                    coroutineScope.launch {
+                        val roomIdStr = event.roomId.value
+                        val contact = beeperMergeRepository.getMergeForRoom(roomIdStr)
+                        if (contact != null) {
+                            if (contact.roomIds.size <= 2) {
+                                beeperMergeRepository.deleteMergedContact(contact.id)
+                            } else {
+                                beeperMergeRepository.removeRoomFromMerge(contact.id, roomIdStr)
+                            }
+                        }
+                        mergePickerMenu.value = RoomListState.MergePickerMenu.Hidden
+                    }
+                }
             }
         }
 
@@ -188,6 +249,7 @@ class RoomListPresenter(
             acceptDeclineInviteState = acceptDeclineInviteState,
             hideInvitesAvatars = hideInvitesAvatar,
             canReportRoom = canReportRoom,
+            mergePickerMenu = mergePickerMenu.value,
             eventSink = ::handleEvent,
         )
     }
@@ -234,11 +296,17 @@ class RoomListPresenter(
         showUnreadCount: Boolean,
     ): RoomListContentState {
         val selectedSpace by virtualSpacesProvider.getSelectedSpace().collectAsState()
+        val mergedContacts by beeperMergeRepository.mergedContactsFlow.collectAsState()
 
-        val roomSummaries by produceState(initialValue = AsyncData.Loading(), key1 = selectedSpace) {
+        val roomSummaries by produceState(
+            initialValue = AsyncData.Loading(),
+            key1 = selectedSpace,
+            key2 = mergedContacts,
+        ) {
             roomListDataSource.roomSummariesFlow.collect { summaries ->
-                 val filtered = filterRoomsForSpace(summaries, selectedSpace)
-                value = AsyncData.Success(filtered)
+                val filtered = filterRoomsForSpace(summaries, selectedSpace)
+                val merged = mergeRoomsForContacts(filtered, mergedContacts)
+                value = AsyncData.Success(merged)
             }
         }
         val loadingState by roomListDataSource.loadingState.collectAsState()
@@ -283,6 +351,7 @@ class RoomListPresenter(
             isDm = event.roomSummary.isDm,
             isFavorite = event.roomSummary.isFavorite,
             hasNewContent = event.roomSummary.hasNewContent,
+            isMerged = event.roomSummary.mergedContact != null,
         )
         contextMenuState.value = initialState
 
@@ -365,6 +434,54 @@ class RoomListPresenter(
             }
         }
         timber.log.Timber.d("BeeperBridge: filterRoomsForSpace OUT with ${result.size} rooms")
+        return result
+    }
+
+    private fun mergeRoomsForContacts(
+        rooms: List<RoomListRoomSummary>,
+        mergedContacts: Map<String, MergedContact>,
+    ): List<RoomListRoomSummary> {
+        if (mergedContacts.isEmpty()) return rooms
+
+        val roomIdToContact = mutableMapOf<String, MergedContact>()
+        for (contact in mergedContacts.values) {
+            for (roomId in contact.roomIds) {
+                roomIdToContact[roomId] = contact
+            }
+        }
+
+        val processedContacts = mutableSetOf<String>()
+        val result = mutableListOf<RoomListRoomSummary>()
+
+        for (room in rooms) {
+            val contact = roomIdToContact[room.id]
+            if (contact == null) {
+                result.add(room)
+            } else {
+                if (processedContacts.add(contact.id)) {
+                    val siblingRooms = rooms.filter { contact.roomIds.contains(it.id) }
+                    val primaryRoom = siblingRooms.firstOrNull() ?: room
+                    val totalUnreadMessages = siblingRooms.sumOf { it.numberOfUnreadMessages }
+                    val totalUnreadMentions = siblingRooms.sumOf { it.numberOfUnreadMentions }
+                    val totalUnreadNotifications = siblingRooms.sumOf { it.numberOfUnreadNotifications }
+                    val hasMarkedUnread = siblingRooms.any { it.isMarkedUnread }
+                    val allNetworks = siblingRooms.mapNotNull { it.beeperData?.network }.distinct().toImmutableList()
+
+                    val mergedSummary = primaryRoom.copy(
+                        name = contact.displayName.ifEmpty { primaryRoom.name },
+                        numberOfUnreadMessages = totalUnreadMessages,
+                        numberOfUnreadMentions = totalUnreadMentions,
+                        numberOfUnreadNotifications = totalUnreadNotifications,
+                        isMarkedUnread = hasMarkedUnread,
+                        mergedContact = contact,
+                        siblingRoomIds = contact.roomIds.filter { it != primaryRoom.id }.toImmutableList(),
+                        mergedNetworks = allNetworks,
+                    )
+                    result.add(mergedSummary)
+                }
+            }
+        }
+
         return result
     }
 }

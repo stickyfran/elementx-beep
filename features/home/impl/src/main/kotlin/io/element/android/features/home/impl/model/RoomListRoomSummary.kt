@@ -9,7 +9,9 @@
 package io.element.android.features.home.impl.model
 
 import androidx.compose.runtime.Immutable
+import io.element.android.features.beeperbridge.api.BeeperNetwork
 import io.element.android.features.beeperbridge.api.BeeperRoomData
+import io.element.android.features.beeperbridge.api.MergedContact
 import io.element.android.features.invite.api.InviteData
 import io.element.android.libraries.designsystem.components.avatar.AvatarData
 import io.element.android.libraries.matrix.api.core.RoomAlias
@@ -19,6 +21,7 @@ import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.model.InviteSender
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
 data class RoomListRoomSummary(
@@ -46,6 +49,9 @@ data class RoomListRoomSummary(
     val isSpace: Boolean,
     val dmUserStatus: DisplayedStatus?,
     val beeperData: BeeperRoomData? = null,
+    val mergedContact: MergedContact? = null,
+    val siblingRoomIds: ImmutableList<String> = persistentListOf(),
+    val mergedNetworks: ImmutableList<BeeperNetwork> = persistentListOf(),
 ) {
     val isHighlighted = userDefinedNotificationMode != RoomNotificationMode.MUTE &&
         (numberOfUnreadNotifications > 0 || numberOfUnreadMentions > 0) ||

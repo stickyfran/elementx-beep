@@ -10,6 +10,10 @@ package io.element.android.features.messages.impl.timeline
 
 import app.cash.turbine.ReceiveTurbine
 import com.google.common.truth.Truth.assertThat
+import io.element.android.features.beeperbridge.api.BeeperBridgeService
+import io.element.android.features.beeperbridge.api.BeeperMergeRepository
+import io.element.android.features.beeperbridge.test.FakeBeeperBridgeService
+import io.element.android.features.beeperbridge.test.FakeBeeperMergeRepository
 import io.element.android.features.location.test.FakeActiveLiveLocationShareManager
 import io.element.android.features.messages.impl.FakeMessagesNavigator
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.aResolveVerifiedUserSendFailureState
@@ -1589,6 +1593,8 @@ class TimelinePresenterTest {
         liveLocationShareManager: FakeActiveLiveLocationShareManager = FakeActiveLiveLocationShareManager(),
         markAsFullyRead: MarkAsFullyRead = FakeMarkAsFullyRead { _, _ -> },
         timelineProtectionPresenter: Presenter<TimelineProtectionState> = { aTimelineProtectionState() },
+        beeperMergeRepository: BeeperMergeRepository = FakeBeeperMergeRepository(),
+        beeperBridgeService: BeeperBridgeService = FakeBeeperBridgeService(),
     ): TimelinePresenter {
         return TimelinePresenter(
             timelineItemsFactoryCreator = aTimelineItemsFactoryCreator(),
@@ -1610,6 +1616,8 @@ class TimelinePresenterTest {
             liveLocationShareManager = liveLocationShareManager,
             markAsFullyRead = markAsFullyRead,
             timelineProtectionPresenter = timelineProtectionPresenter,
+            beeperMergeRepository = beeperMergeRepository,
+            beeperBridgeService = beeperBridgeService,
         )
     }
 }

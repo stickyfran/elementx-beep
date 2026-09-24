@@ -24,6 +24,7 @@ sealed interface TimelineEvent {
     data object ClearFocusRequestState : TimelineEvent
     data object OnFocusEventRender : TimelineEvent
     data object JumpToLive : TimelineEvent
+    data class SwitchMergedRoom(val roomId: RoomId) : TimelineEvent
 
     data object HideShieldDialog : TimelineEvent
 

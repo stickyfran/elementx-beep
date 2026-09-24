@@ -167,6 +167,44 @@ private fun RoomListModalBottomSheetContent(
                 )
             ),
         )
+        if (contextMenu.isDm) {
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = if (contextMenu.isMerged) "Gestionar fusión de contacto" else "Fusionar con otro chat",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                },
+                modifier = Modifier.clickable {
+                    eventSink(RoomListEvent.HideContextMenu)
+                    eventSink(RoomListEvent.ShowMergePicker(contextMenu.roomId))
+                },
+                leadingContent = ListItemContent.Icon(
+                    iconSource = IconSource.Vector(
+                        CompoundIcons.Link(),
+                    )
+                ),
+            )
+        }
+        if (contextMenu.isDm && contextMenu.isMerged) {
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = "Separar contacto",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                },
+                modifier = Modifier.clickable {
+                    eventSink(RoomListEvent.HideContextMenu)
+                    eventSink(RoomListEvent.UnmergeRoom(contextMenu.roomId))
+                },
+                leadingContent = ListItemContent.Icon(
+                    iconSource = IconSource.Vector(
+                        CompoundIcons.Delete(),
+                    )
+                ),
+            )
+        }
         if (canReportRoom) {
             ListItem(
                 headlineContent = {

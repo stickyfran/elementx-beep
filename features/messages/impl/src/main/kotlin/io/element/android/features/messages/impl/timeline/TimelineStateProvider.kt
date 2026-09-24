@@ -66,6 +66,7 @@ fun aTimelineState(
     isShowManualReadBannerEnabled: Boolean = true,
     isShowManualReadBottomEnabled: Boolean = true,
     isShowManualReadInputBarEnabled: Boolean = true,
+    mergedChannels: ImmutableList<io.element.android.features.beeperbridge.api.components.MergedChannelItem> = persistentListOf(),
     eventSink: (TimelineEvent) -> Unit = {},
 ): TimelineState {
     val focusedEventId = timelineItems.filterIsInstance<TimelineItem.Event>().getOrNull(focusedEventIndex)?.eventId
@@ -91,6 +92,7 @@ fun aTimelineState(
         isShowManualReadBannerEnabled = isShowManualReadBannerEnabled,
         isShowManualReadBottomEnabled = isShowManualReadBottomEnabled,
         isShowManualReadInputBarEnabled = isShowManualReadInputBarEnabled,
+        mergedChannels = mergedChannels,
         eventSink = eventSink,
     )
 }

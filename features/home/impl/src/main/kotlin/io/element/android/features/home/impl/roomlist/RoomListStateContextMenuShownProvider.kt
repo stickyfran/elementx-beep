@@ -25,10 +25,12 @@ internal fun aContextMenuShown(
     isDm: Boolean = false,
     hasNewContent: Boolean = false,
     isFavorite: Boolean = false,
+    isMerged: Boolean = false,
 ) = RoomListState.ContextMenu.Shown(
     roomId = RoomId("!aRoom:aDomain"),
     roomName = roomName,
     isDm = isDm,
     hasNewContent = hasNewContent,
     isFavorite = isFavorite,
+    isMerged = isMerged,
 )
