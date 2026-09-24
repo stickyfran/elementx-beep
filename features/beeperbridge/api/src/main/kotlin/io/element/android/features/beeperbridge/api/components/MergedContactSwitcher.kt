@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial.
  * Please see LICENSE files in the repository root for full details.
  */
+
 package io.element.android.features.beeperbridge.api.components
 
 import androidx.compose.foundation.background
@@ -27,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,22 +36,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.element.android.features.beeperbridge.api.BeeperNetwork
-
-@Immutable
-data class MergedChannelItem(
-    val roomId: String,
-    val network: BeeperNetwork,
-    val displayName: String? = null,
-    val unreadCount: Long = 0,
-)
+import kotlinx.collections.immutable.ImmutableList
 
 private const val ALPHA_SELECTED = 0.15f
 private const val ALPHA_SURFACE = 0.5f
 
 @Composable
 fun MergedContactSwitcher(
-    channels: List<MergedChannelItem>,
+    channels: ImmutableList<MergedChannelItem>,
     currentRoomId: String,
     onSelectChannel: (String) -> Unit,
     modifier: Modifier = Modifier,

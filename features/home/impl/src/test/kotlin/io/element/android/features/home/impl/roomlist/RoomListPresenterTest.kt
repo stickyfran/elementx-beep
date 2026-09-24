@@ -15,6 +15,7 @@ import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.beeperbridge.api.BeeperLabelsRepository
 import io.element.android.features.beeperbridge.api.BeeperMergeRepository
 import io.element.android.features.beeperbridge.api.spaces.VirtualSpacesProvider
+import io.element.android.features.beeperbridge.test.FakeBeeperBridgeService
 import io.element.android.features.beeperbridge.test.FakeBeeperLabelsRepository
 import io.element.android.features.beeperbridge.test.FakeBeeperMergeRepository
 import io.element.android.features.beeperbridge.test.FakeVirtualSpacesProvider
@@ -690,6 +691,7 @@ class RoomListPresenterTest {
             sessionCoroutineScope = backgroundScope,
             dateTimeObserver = FakeDateTimeObserver(),
             analyticsService = FakeAnalyticsService(),
+            beeperBridgeService = FakeBeeperBridgeService(),
         ),
         searchPresenter = searchPresenter,
         filtersPresenter = filtersPresenter,

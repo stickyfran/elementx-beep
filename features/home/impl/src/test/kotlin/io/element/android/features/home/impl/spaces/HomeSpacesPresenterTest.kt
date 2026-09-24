@@ -28,6 +28,7 @@ class HomeSpacesPresenterTest {
             virtualSpacesProvider = virtualSpacesProvider
         )
         presenter.test {
+            awaitItem()
             val state = awaitItem()
             assertThat(state.spaces).isEqualTo(spaces)
             assertThat(state.selectedSpaceId).isEqualTo(VirtualSpaceId.AllChats)

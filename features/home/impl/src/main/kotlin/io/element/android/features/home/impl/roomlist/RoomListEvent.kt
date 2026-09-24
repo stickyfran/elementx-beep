@@ -26,7 +26,7 @@ sealed interface RoomListEvent {
 
     data object HideMergePicker : RoomListEvent
     data class PerformMerge(val targetRoomId: RoomId, val siblingRoomId: RoomId, val displayName: String) : RoomListEvent
-    data class UnmergeRoom(val roomId: RoomId) : RoomListEvent
+    data class UnmergeRoom(val roomId: RoomId) : ContextMenuEvent
 
     sealed interface ContextMenuEvent : RoomListEvent
     data object HideContextMenu : ContextMenuEvent

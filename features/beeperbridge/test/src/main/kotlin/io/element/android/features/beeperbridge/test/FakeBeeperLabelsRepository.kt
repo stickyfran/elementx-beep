@@ -34,7 +34,7 @@ class FakeBeeperLabelsRepository : BeeperLabelsRepository {
     override suspend fun setHiddenNetworks(networks: Set<String>) {
         hiddenNetworks = networks
     }
-    
+
     fun emitLabels(labels: List<BeeperLabel>) {
         labelsFlow.value = labels
     }

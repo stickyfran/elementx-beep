@@ -27,13 +27,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.element.android.features.beeperbridge.api.BeeperNetwork
+import kotlinx.collections.immutable.ImmutableList
 
 private const val MAX_STACKED_NETWORKS = 3
 private const val OVERLAP_DP = -6
 
 @Composable
 fun BeeperStackedNetworkBadges(
-    networks: List<BeeperNetwork>,
+    networks: ImmutableList<BeeperNetwork>,
     modifier: Modifier = Modifier,
     badgeSize: Dp = 16.dp,
     borderWidth: Dp = 1.5.dp,

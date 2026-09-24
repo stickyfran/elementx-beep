@@ -10,6 +10,7 @@ package io.element.android.features.home.impl.datasource
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import io.element.android.features.beeperbridge.test.FakeBeeperBridgeService
 import io.element.android.features.home.impl.FakeDateTimeObserver
 import io.element.android.libraries.androidutils.system.DateTimeObserver
 import io.element.android.libraries.dateformatter.test.FakeDateFormatter
@@ -266,6 +267,7 @@ class RoomListDataSourceTest {
         notificationSettingsService: FakeNotificationSettingsService = FakeNotificationSettingsService(),
         dateTimeObserver: FakeDateTimeObserver = FakeDateTimeObserver(),
         analyticsService: FakeAnalyticsService = FakeAnalyticsService(),
+        beeperBridgeService: FakeBeeperBridgeService = FakeBeeperBridgeService(),
     ) = RoomListDataSource(
         roomListService = roomListService,
         roomListRoomSummaryFactory = roomListRoomSummaryFactory,
@@ -274,5 +276,6 @@ class RoomListDataSourceTest {
         sessionCoroutineScope = backgroundScope,
         dateTimeObserver = dateTimeObserver,
         analyticsService = analyticsService,
+        beeperBridgeService = beeperBridgeService,
     )
 }

@@ -26,7 +26,6 @@ import dev.zacsweers.metro.AssistedInject
 import io.element.android.features.beeperbridge.api.BeeperBridgeService
 import io.element.android.features.beeperbridge.api.BeeperMergeRepository
 import io.element.android.features.beeperbridge.api.BeeperNetwork
-import io.element.android.features.beeperbridge.api.BeeperNetworkMap
 import io.element.android.features.beeperbridge.api.components.MergedChannelItem
 import io.element.android.features.location.api.live.ActiveLiveLocationShareManager
 import io.element.android.features.messages.impl.MessagesNavigator
@@ -153,7 +152,6 @@ class TimelinePresenter(
             } else {
                 contact.roomIds.map { siblingId ->
                     val network = beeperBridgeService.getNetworkForRoom(siblingId)
-                        ?: BeeperNetworkMap.detectNetworkFromIdentifier(siblingId)
                         ?: BeeperNetwork.UNKNOWN
                     MergedChannelItem(
                         roomId = siblingId,

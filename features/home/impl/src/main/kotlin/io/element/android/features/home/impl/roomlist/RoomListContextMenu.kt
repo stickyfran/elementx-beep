@@ -73,6 +73,14 @@ fun RoomListContextMenu(
                 eventSink(RoomListEvent.HideContextMenu)
                 onReportRoomClick(contextMenu.roomId)
             },
+            onMergeClick = {
+                eventSink(RoomListEvent.HideContextMenu)
+                eventSink(RoomListEvent.ShowMergePicker(contextMenu.roomId))
+            },
+            onUnmergeClick = {
+                eventSink(RoomListEvent.HideContextMenu)
+                eventSink(RoomListEvent.UnmergeRoom(contextMenu.roomId))
+            },
         )
     }
 }
@@ -87,6 +95,8 @@ private fun RoomListModalBottomSheetContent(
     onRoomMarkReadClick: () -> Unit,
     onRoomMarkUnreadClick: () -> Unit,
     onReportRoomClick: () -> Unit,
+    onMergeClick: () -> Unit,
+    onUnmergeClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -175,10 +185,7 @@ private fun RoomListModalBottomSheetContent(
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 },
-                modifier = Modifier.clickable {
-                    eventSink(RoomListEvent.HideContextMenu)
-                    eventSink(RoomListEvent.ShowMergePicker(contextMenu.roomId))
-                },
+                modifier = Modifier.clickable { onMergeClick() },
                 leadingContent = ListItemContent.Icon(
                     iconSource = IconSource.Vector(
                         CompoundIcons.Link(),
@@ -194,10 +201,7 @@ private fun RoomListModalBottomSheetContent(
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 },
-                modifier = Modifier.clickable {
-                    eventSink(RoomListEvent.HideContextMenu)
-                    eventSink(RoomListEvent.UnmergeRoom(contextMenu.roomId))
-                },
+                modifier = Modifier.clickable { onUnmergeClick() },
                 leadingContent = ListItemContent.Icon(
                     iconSource = IconSource.Vector(
                         CompoundIcons.Delete(),

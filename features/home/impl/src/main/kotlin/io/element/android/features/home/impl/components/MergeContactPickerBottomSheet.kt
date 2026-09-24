@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +43,7 @@ import io.element.android.libraries.designsystem.theme.components.Button
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
 import io.element.android.libraries.designsystem.theme.components.ModalBottomSheet
+import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.matrix.api.core.RoomId
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +63,7 @@ fun MergeContactPickerBottomSheet(
             state.candidateRooms
         } else {
             state.candidateRooms.filter {
-                it.name.contains(searchQuery, ignoreCase = true)
+                it.name?.contains(searchQuery, ignoreCase = true) == true
             }
         }
     }
@@ -71,6 +71,7 @@ fun MergeContactPickerBottomSheet(
     ModalBottomSheet(
         modifier = modifier,
         onDismissRequest = onDismiss,
+        scrollable = false,
     ) {
         Column(
             modifier = Modifier
@@ -92,12 +93,14 @@ fun MergeContactPickerBottomSheet(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            OutlinedTextField(
+            TextField(
                 value = customDisplayName,
                 onValueChange = { customDisplayName = it },
-                label = { Text("Nombre unificado") },
+                label = "Nombre unificado",
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
             )
 
             val existingContact = state.existingMergedContact
@@ -146,15 +149,17 @@ fun MergeContactPickerBottomSheet(
                 modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
             )
 
-            OutlinedTextField(
+            TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Buscar conversación...") },
+                placeholder = "Buscar conversación...",
                 leadingIcon = {
                     Icon(imageVector = CompoundIcons.Search(), contentDescription = null)
                 },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
             )
 
             LazyColumn(
@@ -218,7 +223,7 @@ private fun CandidateRoomRow(
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = room.name,
+                text = room.name ?: "Chat",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1
